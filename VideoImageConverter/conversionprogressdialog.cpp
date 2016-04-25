@@ -45,29 +45,21 @@ ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
 	//loader
 	connect(this->loader, &VideoLoader::progressUpdate,
 			this->ui->conversionProgressBar, &QProgressBar::setValue);
-	connect(this->loader, &VideoLoader::statusChanged,
-			this->fileModel, &ConvertFileModel::reloadInfo);
 	connect(this->loader, &VideoLoader::showMessage,
 			this, &ConversionProgressDialog::postMessage);
 	//transformer
 	connect(this->transformer, &ImageTransformator::progressUpdate,
 			this->ui->transformationProgressBar, &QProgressBar::setValue);
-	connect(this->transformer, &ImageTransformator::statusChanged,
-			this->fileModel, &ConvertFileModel::reloadInfo);
 	connect(this->transformer, &ImageTransformator::showMessage,
 			this, &ConversionProgressDialog::postMessage);
 	//cacher
 	connect(this->cacher, &CachingGenerator::progressUpdate,
 			this->ui->cachingProgressBar, &QProgressBar::setValue);
-	connect(this->cacher, &CachingGenerator::statusChanged,
-			this->fileModel, &ConvertFileModel::reloadInfo);
 	connect(this->cacher, &CachingGenerator::showMessage,
 			this, &ConversionProgressDialog::postMessage);
 	//assembler
 	connect(this->assembler, &ApngAssembler::progressUpdate,
 			this->ui->savingProgressBar, &QProgressBar::setValue);
-	connect(this->assembler, &ApngAssembler::statusChanged,
-			this->fileModel, &ConvertFileModel::reloadInfo);
 	connect(this->assembler, &ApngAssembler::showMessage,
 			this, &ConversionProgressDialog::postMessage);
 
@@ -161,10 +153,14 @@ void ConversionProgressDialog::updateRamUsage()
 	}
 }
 
-void ConversionProgressDialog::postMessage(ConvertFileInfo *info, QString text, const QMessageBox::Icon &icon)
+void ConversionProgressDialog::postMessage(ConvertFileInfo *info, QString text, const QMessageBox::Icon &icon, bool updateInfo)
 {
-	if(info != Q_NULLPTR)
+	if(info) {
+		if(updateInfo)
+			info->setResultText(text);
 		text.prepend(tr("File \"%1\": ").arg(info->filename()));
+	}
+
 	if(icon ==  QMessageBox::Warning ||
 	   icon == QMessageBox::Critical)
 		this->statusBar()->showMessage(text);

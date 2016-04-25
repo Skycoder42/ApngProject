@@ -37,7 +37,7 @@ protected:
 
 private slots:
 	void updateRamUsage();
-	void postMessage(ConvertFileInfo *info, QString text, const QMessageBox::Icon &icon);
+	void postMessage(ConvertFileInfo *info, QString text, const QMessageBox::Icon &icon, bool updateInfo);
 	void lastFinished();
 
 private:

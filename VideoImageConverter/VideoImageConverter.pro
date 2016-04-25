@@ -60,4 +60,9 @@ FORMS += \
     advancedoptionsdialog.ui
 
 RESOURCES += \
-    videoimageconverter_res.qrc
+	videoimageconverter_res.qrc
+
+# make targets
+cpapngasm.path = $$OUT_PWD/debug
+cpapngasm.files += $$PWD/../apngasm.exe
+INSTALLS += cpapngasm

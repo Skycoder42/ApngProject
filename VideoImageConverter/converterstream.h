@@ -29,8 +29,7 @@ public slots:
 
 signals:
 	void progressUpdate(int progress);
-	void showMessage(ConvertFileInfo* info, const QString &text, const QMessageBox::Icon &icon = QMessageBox::Information);
-	void statusChanged(ConvertFileInfo* info);
+	void showMessage(ConvertFileInfo* info, const QString &text, const QMessageBox::Icon &icon = QMessageBox::Information, bool updateInfo = true);
 
 	void completed(ConvertFileInfo *info);
 	void finished();

@@ -57,13 +57,13 @@ void VideoLoader::handleNext()
 		return;
 	if(RamManager::ramUsageOk()) {
 		auto info = this->current();
-		info->updateStatus(ConvertFileInfo::Converting, this);
-		emit statusChanged(info);
+		info->updateStatus(ConvertFileInfo::Converting);
 		this->readPlayer->setMedia(QUrl::fromLocalFile(info->filename()));
 		this->readPlayer->play();
 		emit showMessage(info, tr("Starting conversion"));
 	} else {
-		emit showMessage(this->current(), tr("High Memory usage! Waiting for 5 seconds before trying again"),
+		emit showMessage(this->current(),
+						 tr("High Memory usage! Waiting for 5 seconds before trying again"),
 						 QMessageBox::Warning);
 		QTimer::singleShot(5000, this, &VideoLoader::handleNext);
 	}
@@ -105,7 +105,6 @@ void VideoLoader::mediaUpdate(QMediaPlayer::MediaStatus status)
 		this->readPlayer->stop();
 		this->saveImageData();
 		this->imageData.clear();
-		emit statusChanged(this->current());
 		this->handleFinished();
 	}
 }
@@ -117,9 +116,7 @@ void VideoLoader::playerError(QMediaPlayer::Error error)
 
 	this->readPlayer->stop();
 	auto info = this->current();
-	info->updateStatus(ConvertFileInfo::Error, this);
-	info->setResultText(tr("Finished with error (%1): %2").arg(error).arg(this->readPlayer->errorString()));
-	emit statusChanged(info);
+	info->updateStatus(ConvertFileInfo::Error);
 	emit showMessage(info,
 					 tr("Failed to convert with error (Code %1): %2")
 					 .arg(error)
@@ -131,8 +128,7 @@ void VideoLoader::playerError(QMediaPlayer::Error error)
 void VideoLoader::saveImageData()
 {
 	auto info = this->current();
-	info->updateStatus(ConvertFileInfo::Converted, this);
+	info->updateStatus(ConvertFileInfo::Converted);
 	info->setImageData(this->imageData);
-	emit statusChanged(info);
 	emit showMessage(info, tr("Finished conversion successfully"));
 }

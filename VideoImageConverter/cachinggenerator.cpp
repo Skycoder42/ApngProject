@@ -29,7 +29,7 @@ void CachingGenerator::handleNext()
 {
 	QtConcurrent::run([this](){
 		auto info = this->current();
-		info->updateStatus(ConvertFileInfo::Caching, this);
+		info->updateStatus(ConvertFileInfo::Caching);
 
 		QFileInfo origFileInfo(info->filename());
 		QDir targetDir;
@@ -41,13 +41,11 @@ void CachingGenerator::handleNext()
 		auto tempDir = new QTemporaryDir(targetDir.absoluteFilePath(QStringLiteral(".%1-cache-XXXXXX")
 																	.arg(origFileInfo.completeBaseName())));
 		if(!tempDir->isValid()) {
-			info->setResultText(tr("Failed to create caching directory: %1")
-								.arg(tempDir->errorString()));
 			delete tempDir;
-
-			info->updateStatus(ConvertFileInfo::Error, this);
+			info->updateStatus(ConvertFileInfo::Error);
 			emit showMessage(info,
-							 info->resultText(),
+							 tr("Failed to create caching directory: %1")
+							 .arg(tempDir->errorString()),
 							 QMessageBox::Critical);
 			QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 			return;
@@ -72,10 +70,9 @@ void CachingGenerator::handleNext()
 			auto filePath = rDir.absoluteFilePath(pathBase + QStringLiteral(".png"));
 
 			if(!it->first.save(filePath, "png", 0)) {
-				info->setResultText(tr("Failed to save frame %L1 into cache.").arg(cnt));
-				info->updateStatus(ConvertFileInfo::Error, this);
+				info->updateStatus(ConvertFileInfo::Error);
 				emit showMessage(info,
-								 info->resultText(),
+								 tr("Failed to save frame %L1 into cache.").arg(cnt),
 								 QMessageBox::Critical);
 				QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 				return;
@@ -87,10 +84,9 @@ void CachingGenerator::handleNext()
 				metaFile.write(formatText.toLatin1());
 				metaFile.close();
 			} else {
-				info->setResultText(tr("Failed to save metadata of frame %L1 into cache.").arg(cnt));
-				info->updateStatus(ConvertFileInfo::Error, this);
+				info->updateStatus(ConvertFileInfo::Error);
 				emit showMessage(info,
-								 info->resultText(),
+								 tr("Failed to save metadata of frame %L1 into cache.").arg(cnt),
 								 QMessageBox::Critical);
 				QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 				return;
@@ -98,7 +94,7 @@ void CachingGenerator::handleNext()
 		}
 
 		info->resetImageData();
-		info->updateStatus(ConvertFileInfo::Cached, this);
+		info->updateStatus(ConvertFileInfo::Cached);
 		emit showMessage(info, tr("Frames successfully cached."));
 		QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 	});

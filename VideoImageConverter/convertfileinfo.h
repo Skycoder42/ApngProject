@@ -1,7 +1,7 @@
 #ifndef CONVERTFILEINFO_H
 #define CONVERTFILEINFO_H
 
-#include <QSharedDataPointer>
+#include <QObject>
 #include <QVariant>
 #include <QIcon>
 #include <QLinkedList>
@@ -10,9 +10,13 @@
 #include "imageinfo.h"
 class ConverterStream;
 
-class ConvertFileInfo
+class ConvertFileInfo : public QObject
 {
-	Q_DISABLE_COPY(ConvertFileInfo)
+	Q_OBJECT
+
+	Q_PROPERTY(QString filename READ filename CONSTANT FINAL)
+	Q_PROPERTY(Status status READ status WRITE updateStatus NOTIFY statusChanged)
+	Q_PROPERTY(QString resultText READ resultText WRITE setResultText NOTIFY resultTextChanged)
 
 public:
 	enum Status {
@@ -27,27 +31,28 @@ public:
 		Success,
 		Error
 	};
+	Q_ENUM(Status)
+
 	typedef QLinkedList<ImageInfo>::Iterator ImageIterator;
 
 	static QIcon iconForStatus(Status status);
 	static QString textForStatus(Status status);
 
-	ConvertFileInfo(const QString &filename = QString());
+	ConvertFileInfo(const QString &filename = QString(), QObject *parent = Q_NULLPTR);
 
-	bool isValid() const;
+	Q_INVOKABLE bool isValid() const;
 
 	QString filename() const;
 	Status status() const;
-	void updateStatus(Status status, ConverterStream *stream);
 	inline QIcon statusIcon() const {
 		return ConvertFileInfo::iconForStatus(this->status());
 	}
 	inline QString statusText() const {
 		return ConvertFileInfo::textForStatus(this->status());
 	}
+	QString resultText() const;
 
-	QString resultText() const;//Error or out file
-	void setResultText(const QString &text);
+	//internal functions
 	QLinkedList<ImageInfo> imageData() const;
 	void setImageData(const QLinkedList<ImageInfo> &dataList);
 	void resetImageData();
@@ -57,6 +62,14 @@ public:
 	ImageIterator imageBegin();
 	ImageIterator imageEnd();
 	ImageIterator removeFrame(const ImageIterator &iterator);
+
+public slots:
+	void updateStatus(ConvertFileInfo::Status status);
+	void setResultText(const QString &text);
+
+signals:
+	void statusChanged(ConvertFileInfo::Status status);
+	void resultTextChanged(QString resultText);
 
 private:
 	const QString origFileName;

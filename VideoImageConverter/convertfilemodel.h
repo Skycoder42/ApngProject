@@ -12,7 +12,6 @@ class ConvertFileModel : public QAbstractTableModel
 	Q_OBJECT
 public:
 	explicit ConvertFileModel(QObject *parent = 0);
-	~ConvertFileModel();
 
 	ConvertFileInfo *item(const QModelIndex &index) const;
 	void addItem(ConvertFileInfo *item);
@@ -27,8 +26,8 @@ public:
 	QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
-public slots:
-	void reloadInfo(ConvertFileInfo *info);
+private slots:
+	void reloadInfo();
 
 private:
 	QList<ConvertFileInfo*> fileItems;

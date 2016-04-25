@@ -59,7 +59,8 @@ QString ConvertFileInfo::textForStatus(ConvertFileInfo::Status status)
 	}
 }
 
-ConvertFileInfo::ConvertFileInfo(const QString &filename) :
+ConvertFileInfo::ConvertFileInfo(const QString &filename, QObject *parent) :
+	QObject(parent),
 	origFileName(filename),
 	currentStatus(ConvertFileInfo::Waiting),
 	currentStatusText(),
@@ -81,10 +82,10 @@ ConvertFileInfo::Status ConvertFileInfo::status() const
 	return this->currentStatus;
 }
 
-void ConvertFileInfo::updateStatus(ConvertFileInfo::Status status, ConverterStream *stream)
+void ConvertFileInfo::updateStatus(ConvertFileInfo::Status status)
 {
 	this->currentStatus = status;
-	emit stream->statusChanged(this);
+	emit statusChanged(status);
 }
 
 QString ConvertFileInfo::resultText() const
@@ -95,6 +96,7 @@ QString ConvertFileInfo::resultText() const
 void ConvertFileInfo::setResultText(const QString &text)
 {
 	this->currentStatusText = text;
+	emit resultTextChanged(text);
 }
 
 QLinkedList<ImageInfo> ConvertFileInfo::imageData() const

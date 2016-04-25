@@ -25,7 +25,7 @@ void ImageTransformator::handleNext()
 {
 	QtConcurrent::run([this](){
 		auto info = this->current();
-		info->updateStatus(ConvertFileInfo::Transforming, this);
+		info->updateStatus(ConvertFileInfo::Transforming);
 		double minDelay = this->setup.frameRate > 0.0 ? 1000.0/this->setup.frameRate : 1.0;
 		double delayCounter = std::numeric_limits<double>::infinity();
 
@@ -72,7 +72,7 @@ void ImageTransformator::handleNext()
 		else
 			emit showMessage(info, tr("Finished Transformation. No frames had to be removed!"));
 
-		info->updateStatus(ConvertFileInfo::Transformed, this);
+		info->updateStatus(ConvertFileInfo::Transformed);
 		QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 	});
 }

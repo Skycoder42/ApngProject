@@ -6,11 +6,6 @@ ConvertFileModel::ConvertFileModel(QObject *parent) :
 	iconProvider(new QFileIconProvider())
 {}
 
-ConvertFileModel::~ConvertFileModel()
-{
-	qDeleteAll(this->fileItems);
-}
-
 ConvertFileInfo *ConvertFileModel::item(const QModelIndex &index) const
 {
 	if(!index.isValid() ||
@@ -24,6 +19,11 @@ ConvertFileInfo *ConvertFileModel::item(const QModelIndex &index) const
 void ConvertFileModel::addItem(ConvertFileInfo *item)
 {
 	this->beginInsertRows(QModelIndex(), this->fileItems.size(), this->fileItems.size());
+	item->setParent(this);
+	connect(item, &ConvertFileInfo::statusChanged,
+			this, &ConvertFileModel::reloadInfo);
+	connect(item, &ConvertFileInfo::resultTextChanged,
+			this, &ConvertFileModel::reloadInfo);
 	this->fileItems.append(item);
 	this->endInsertRows();
 }
@@ -36,7 +36,7 @@ bool ConvertFileModel::removeItem(const QModelIndex &index)
 		return false;
 	} else {
 		this->beginRemoveRows(QModelIndex(), index.row(), index.row());
-		delete this->fileItems.takeAt(index.row());
+		this->fileItems.takeAt(index.row())->deleteLater();
 		this->endRemoveRows();
 		return true;
 	}
@@ -53,7 +53,7 @@ bool ConvertFileModel::removeItems(const QModelIndexList &indexes)
 		   pIndex.row() >= 0 &&
 		   pIndex.row() < this->fileItems.size()) {
 			this->beginRemoveRows(QModelIndex(), pIndex.row(), pIndex.row());
-			delete this->fileItems.takeAt(pIndex.row());
+			this->fileItems.takeAt(pIndex.row())->deleteLater();
 			this->endRemoveRows();
 		}
 	}
@@ -79,7 +79,7 @@ int ConvertFileModel::columnCount(const QModelIndex &parent) const
 	if(parent.isValid())
 		return 0;
 	else
-		return 2;
+		return 3;
 }
 
 QVariant ConvertFileModel::data(const QModelIndex &index, int role) const
@@ -91,6 +91,8 @@ QVariant ConvertFileModel::data(const QModelIndex &index, int role) const
 			return this->fileItems[index.row()]->statusText();
 		case 1:
 			return this->fileItems[index.row()]->filename();
+		case 2:
+			return this->fileItems[index.row()]->resultText();
 		}
 	case Qt::DecorationRole:
 		switch (index.column()) {
@@ -115,15 +117,17 @@ QVariant ConvertFileModel::headerData(int section, Qt::Orientation orientation, 
 			return tr("Status");
 		case 1:
 			return tr("Filename");
+		case 2:
+			return tr("Status-Text");
 		}
 	}
 
 	return QVariant();
 }
 
-void ConvertFileModel::reloadInfo(ConvertFileInfo *info)
+void ConvertFileModel::reloadInfo()
 {
-	auto index = this->fileItems.indexOf(info);
+	auto index = this->fileItems.indexOf(qobject_cast<ConvertFileInfo*>(QObject::sender()));
 	if(index >= 0)
-		emit dataChanged(this->index(index, 0), this->index(index, 1));
+		emit dataChanged(this->index(index, 0), this->index(index, 2));
 }
