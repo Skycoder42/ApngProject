@@ -22,8 +22,8 @@ win32 {
 	QT += winextras
 }
 
-include(C:/C++Libraries/Qt/QPathEdit/qpathedit.pri)
-include(C:/C++Libraries/Qt/DialogMaster/dialogmaster.pri)
+include(../DialogMaster/dialogmaster.pri)
+include(../QPathEdit/qpathedit.pri)
 
 SOURCES += main.cpp \
     videoloader.cpp \
