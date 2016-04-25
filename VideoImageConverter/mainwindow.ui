@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QDialog" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>432</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Setup</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QListWidget" name="fileListWidget">
+         <property name="contextMenuPolicy">
+          <enum>Qt::ActionsContextMenu</enum>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="textElideMode">
+          <enum>Qt::ElideMiddle</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QPushButton" name="advancedOptionsButton">
+           <property name="text">
+            <string>&amp;Advanced Options</string>
+           </property>
+           <property name="autoDefault">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="removeButton"/>
+         </item>
+         <item>
+          <widget class="QToolButton" name="addButton">
+           <property name="popupMode">
+            <enum>QToolButton::MenuButtonPopup</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="optionsGroupBox">
+         <property name="title">
+          <string>Options</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="outputDirectoryCheckBox">
+            <property name="text">
+             <string>&amp;Output directory:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPathEdit" name="outputDirectoryPathEdit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+            <property name="style">
+             <enum>QPathEdit::JoinedButton</enum>
+            </property>
+            <property name="pathMode">
+             <enum>QPathEdit::ExistingFolder</enum>
+            </property>
+            <property name="dialogOptions">
+             <set>QFileDialog::ShowDirsOnly</set>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="allowEmptyPath">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="targetSizeSpinBox">
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="specialValueText">
+             <string>Keep original size</string>
+            </property>
+            <property name="accelerated">
+             <bool>true</bool>
+            </property>
+            <property name="correctionMode">
+             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+            </property>
+            <property name="showGroupSeparator" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="suffix">
+             <string> px</string>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="targetSpeedRelativeLabel">
+            <property name="text">
+             <string>Target Sp&amp;eed (relative):</string>
+            </property>
+            <property name="buddy">
+             <cstring>targetSpeedRelativeSlider</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSlider" name="targetSpeedRelativeSlider">
+            <property name="minimum">
+             <number>-5</number>
+            </property>
+            <property name="maximum">
+             <number>5</number>
+            </property>
+            <property name="pageStep">
+             <number>2</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksAbove</enum>
+            </property>
+            <property name="tickInterval">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="loopCountLabel">
+            <property name="text">
+             <string>&amp;Loop Count:</string>
+            </property>
+            <property name="buddy">
+             <cstring>loopCountSpinBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="loopCountSpinBox">
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="specialValueText">
+             <string>Infinite</string>
+            </property>
+            <property name="accelerated">
+             <bool>true</bool>
+            </property>
+            <property name="correctionMode">
+             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+            </property>
+            <property name="showGroupSeparator" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="keepPaletteLabel">
+            <property name="text">
+             <string>Keep &amp;Palette:</string>
+            </property>
+            <property name="buddy">
+             <cstring>keepPaletteCheckBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="keepPaletteCheckBox"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="keepColorTypeLabel">
+            <property name="text">
+             <string>Keep &amp;Color Type:</string>
+            </property>
+            <property name="buddy">
+             <cstring>keepColorTypeCheckBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QCheckBox" name="keepColorTypeCheckBox"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="compressionTypeLabel">
+            <property name="text">
+             <string>Compression &amp;Type:</string>
+            </property>
+            <property name="buddy">
+             <cstring>mode7zipButton</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QRadioButton" name="mode7zipButton">
+              <property name="text">
+               <string>7zip compression</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="modeZlibButton">
+              <property name="text">
+               <string>zlib compression</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="modeZopfliButton">
+              <property name="text">
+               <string>Zopfli compression</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="compressionIterationsLabel">
+            <property name="text">
+             <string>Compression &amp;Iterations:</string>
+            </property>
+            <property name="buddy">
+             <cstring>compressionIterationsSpinBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QSpinBox" name="compressionIterationsSpinBox">
+            <property name="specialValueText">
+             <string>Default</string>
+            </property>
+            <property name="accelerated">
+             <bool>true</bool>
+            </property>
+            <property name="showGroupSeparator" stdset="0">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QCheckBox" name="deleteOriginalFilesCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="deleteOriginalFilesLabel">
+            <property name="text">
+             <string>&amp;Delete original files:</string>
+            </property>
+            <property name="buddy">
+             <cstring>deleteOriginalFilesCheckBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="frameRateDoubleSpinBox">
+            <property name="specialValueText">
+             <string>Automatic (unlimited if possible)</string>
+            </property>
+            <property name="accelerated">
+             <bool>true</bool>
+            </property>
+            <property name="correctionMode">
+             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+            </property>
+            <property name="showGroupSeparator" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="suffix">
+             <string> FPS</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="targetSizeLabel">
+            <property name="text">
+             <string>Target &amp;size (adjusted):</string>
+            </property>
+            <property name="buddy">
+             <cstring>targetSizeSpinBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="frameRateLabel">
+            <property name="text">
+             <string>Limit &amp;Frame rate:</string>
+            </property>
+            <property name="buddy">
+             <cstring>frameRateDoubleSpinBox</cstring>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCommandLinkButton" name="startConversionButton">
+         <property name="text">
+          <string>Start Video to APNG conversion</string>
+         </property>
+         <property name="description">
+          <string>The conversion may take a while. A new Dialog will open to show you the overall progress. The process may consume much memory and cpu.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionAdd_Files">
+   <property name="icon">
+    <iconset resource="videoimageconverter_res.qrc">
+     <normaloff>:/icons/files.ico</normaloff>:/icons/files.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Add Files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionAdd_Folder">
+   <property name="icon">
+    <iconset resource="videoimageconverter_res.qrc">
+     <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Add Folder</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionAdd_Folder_Recursive">
+   <property name="icon">
+    <iconset resource="videoimageconverter_res.qrc">
+     <normaloff>:/icons/folder_rec.ico</normaloff>:/icons/folder_rec.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Add Folder, Recursive</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R, Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionRemove_Selected_Files">
+   <property name="icon">
+    <iconset resource="videoimageconverter_res.qrc">
+     <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Remove Selected Files</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetShortcut</enum>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QPathEdit</class>
+   <extends>QWidget</extends>
+   <header>qpathedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>addButton</tabstop>
+  <tabstop>fileListWidget</tabstop>
+  <tabstop>removeButton</tabstop>
+  <tabstop>outputDirectoryCheckBox</tabstop>
+  <tabstop>outputDirectoryPathEdit</tabstop>
+  <tabstop>targetSizeSpinBox</tabstop>
+  <tabstop>frameRateDoubleSpinBox</tabstop>
+  <tabstop>targetSpeedRelativeSlider</tabstop>
+  <tabstop>loopCountSpinBox</tabstop>
+  <tabstop>keepPaletteCheckBox</tabstop>
+  <tabstop>keepColorTypeCheckBox</tabstop>
+  <tabstop>mode7zipButton</tabstop>
+  <tabstop>modeZlibButton</tabstop>
+  <tabstop>modeZopfliButton</tabstop>
+  <tabstop>compressionIterationsSpinBox</tabstop>
+  <tabstop>deleteOriginalFilesCheckBox</tabstop>
+  <tabstop>startConversionButton</tabstop>
+  <tabstop>advancedOptionsButton</tabstop>
+ </tabstops>
+ <resources>
+  <include location="videoimageconverter_res.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>outputDirectoryCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>outputDirectoryPathEdit</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>447</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>679</x>
+     <y>52</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>addButton</sender>
+   <signal>triggered(QAction*)</signal>
+   <receiver>addButton</receiver>
+   <slot>setDefaultAction(QAction*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>322</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>322</x>
+     <y>419</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

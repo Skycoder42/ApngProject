@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="folder.ico">resources/folder.ico</file>
+        <file alias="folder_rec.ico">resources/folders_explorer.ico</file>
+        <file alias="delete.ico">resources/page_white_delete.ico</file>
+        <file alias="files.ico">resources/page_white_stack.ico</file>
+        <file alias="main.ico">resources/main.ico</file>
+        <file alias="reset.ico">resources/arrow_undo.ico</file>
+    </qresource>
+    <qresource prefix="/icons/status">
+        <file alias="waiting.ico">resources/hourglass.ico</file>
+        <file alias="converting.ico">resources/progressbar.ico</file>
+        <file alias="saving.ico">resources/Everaldo-Crystal-Clear-App-download-manager.ico</file>
+        <file alias="transforming.ico">resources/Icons8-Windows-8-Programming-Settings-3.ico</file>
+        <file alias="converted.ico">resources/progressbar_green.ico</file>
+        <file alias="transformed.ico">resources/transform_ok.ico</file>
+        <file alias="error.ico">resources/cross_shield.ico</file>
+        <file alias="success.ico">resources/Icojam-Onebit-Ok.ico</file>
+        <file alias="cached.ico">resources/database_green.ico</file>
+        <file alias="caching.ico">resources/database_go.ico</file>
+    </qresource>
+</RCC>
