@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
 	QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/main.ico")));
 
 	qRegisterMetaType<QList<ConverterStream::SetupInfo*>>();
+	qRegisterMetaType<ConvertFileInfo::Status>();
 	qRegisterMetaType<QMessageBox::Icon>();
 
 	MainWindow w;
