@@ -102,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("setupWindow"));
 	this->restoreGeometry(settings.value(QStringLiteral("geom")).toByteArray());
+	this->ui->splitter->restoreState(settings.value(QStringLiteral("splitter")).toByteArray());
 	switch(settings.value(QStringLiteral("defaultOpenAction")).toInt()) {
 	case 1:
 		this->ui->addButton->setDefaultAction(this->ui->actionAdd_Folder);
@@ -120,6 +121,7 @@ MainWindow::~MainWindow()
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("setupWindow"));
 	settings.setValue(QStringLiteral("geom"), this->saveGeometry());
+	settings.setValue(QStringLiteral("splitter"), this->ui->splitter->saveState());
 	if(this->ui->addButton->defaultAction() == this->ui->actionAdd_Files)
 		settings.setValue(QStringLiteral("defaultOpenAction"), 0);
 	else if(this->ui->addButton->defaultAction() == this->ui->actionAdd_Folder)
@@ -134,7 +136,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionAdd_Files_triggered()
 {
 	QSettings settings;
-	settings.beginGroup(QStringLiteral("defaultFilter"));
+	settings.beginGroup(QStringLiteral("setupWindow"));
 	QString selectedFilter = settings.value(QStringLiteral("defaultFilter")).toString();
 	auto files = DialogMaster::getOpenFileNames(this,
 												tr("Open video files"),

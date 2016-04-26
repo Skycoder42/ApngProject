@@ -64,7 +64,9 @@ ConvertFileInfo::ConvertFileInfo(const QString &filename, QObject *parent) :
 	origFileName(filename),
 	currentStatus(ConvertFileInfo::Waiting),
 	currentStatusText(),
-	convertData()
+	convertData(),
+	currentProg(-1),
+	progressBaseText()
 {}
 
 bool ConvertFileInfo::isValid() const
@@ -93,10 +95,52 @@ QString ConvertFileInfo::resultText() const
 	return this->currentStatusText;
 }
 
+int ConvertFileInfo::currentProgress() const
+{
+	return this->currentProg;
+}
+
+QString ConvertFileInfo::progressText() const
+{
+	return this->currentProg >= 0 ?
+				this->progressBaseText.arg(this->currentProg) :
+				this->progressBaseText;
+}
+
 void ConvertFileInfo::setResultText(const QString &text)
 {
 	this->currentStatusText = text;
 	emit resultTextChanged(text);
+}
+
+void ConvertFileInfo::setCurrentProgress(int progress)
+{
+	if(progress != this->currentProg) {
+		this->currentProg = progress;
+		emit currentProgressChanged();
+	}
+}
+
+void ConvertFileInfo::setCurrentProgress(int value, int maximum)
+{
+	auto progress = qRound((value * 100.0) / maximum);
+	if(progress != this->currentProg) {
+		this->currentProg = progress;
+		emit currentProgressChanged();
+	}
+}
+
+void ConvertFileInfo::setProgressBaseText(QString progressText)
+{
+	this->progressBaseText = progressText;
+	emit currentProgressChanged();
+}
+
+void ConvertFileInfo::resetProgress()
+{
+	this->currentProg = -1;
+	this->progressBaseText.clear();
+	emit currentProgressChanged();
 }
 
 QLinkedList<ImageInfo> ConvertFileInfo::imageData() const

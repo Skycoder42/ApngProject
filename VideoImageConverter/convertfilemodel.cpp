@@ -3,7 +3,8 @@
 ConvertFileModel::ConvertFileModel(QObject *parent) :
 	QAbstractTableModel(parent),
 	fileItems(),
-	iconProvider(new QFileIconProvider())
+	iconProvider(new QFileIconProvider()),
+	pieDrawer(new PieDrawer())
 {}
 
 ConvertFileInfo *ConvertFileModel::item(const QModelIndex &index) const
@@ -21,9 +22,11 @@ void ConvertFileModel::addItem(ConvertFileInfo *item)
 	this->beginInsertRows(QModelIndex(), this->fileItems.size(), this->fileItems.size());
 	item->setParent(this);
 	connect(item, &ConvertFileInfo::statusChanged,
-			this, &ConvertFileModel::reloadInfo);
+			this, [this]() {this->reloadInfo(0);});
 	connect(item, &ConvertFileInfo::resultTextChanged,
-			this, &ConvertFileModel::reloadInfo);
+			this, [this]() {this->reloadInfo(2);});
+	connect(item, &ConvertFileInfo::currentProgressChanged,
+			this, [this]() {this->reloadInfo(3);});
 	this->fileItems.append(item);
 	this->endInsertRows();
 }
@@ -79,7 +82,7 @@ int ConvertFileModel::columnCount(const QModelIndex &parent) const
 	if(parent.isValid())
 		return 0;
 	else
-		return 3;
+		return 4;
 }
 
 QVariant ConvertFileModel::data(const QModelIndex &index, int role) const
@@ -93,14 +96,25 @@ QVariant ConvertFileModel::data(const QModelIndex &index, int role) const
 			return this->fileItems[index.row()]->filename();
 		case 2:
 			return this->fileItems[index.row()]->resultText();
+		case 3:
+			return this->fileItems[index.row()]->progressText();
 		}
+		break;
 	case Qt::DecorationRole:
 		switch (index.column()) {
 		case 0:
 			return this->fileItems[index.row()]->statusIcon();
 		case 1:
 			return this->iconProvider->icon(this->fileItems[index.row()]->filename());
+		case 3:
+		{
+			auto item = this->fileItems[index.row()];
+			if(!item->progressText().isEmpty())
+				return this->pieDrawer->getPie(item->currentProgress());
+			break;
 		}
+		}
+		break;
 	case Qt::ToolTipRole:
 		return this->fileItems[index.row()]->filename();
 	}
@@ -119,15 +133,17 @@ QVariant ConvertFileModel::headerData(int section, Qt::Orientation orientation, 
 			return tr("Filename");
 		case 2:
 			return tr("Status-Text");
+		case 3:
+			return tr("Progress");
 		}
 	}
 
 	return QVariant();
 }
 
-void ConvertFileModel::reloadInfo()
+void ConvertFileModel::reloadInfo(int column)
 {
 	auto index = this->fileItems.indexOf(qobject_cast<ConvertFileInfo*>(QObject::sender()));
 	if(index >= 0)
-		emit dataChanged(this->index(index, 0), this->index(index, 2));
+		emit dataChanged(this->index(index, column), this->index(index, column));
 }

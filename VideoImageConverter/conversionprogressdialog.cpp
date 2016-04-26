@@ -34,7 +34,7 @@ ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
 	this->ramBar->setTextVisible(false);
 	this->ramBar->setRange(0, 4096);
 #ifdef Q_OS_WIN
-	this->ramBar->setFixedSize(110, 16);
+	this->ramBar->setFixedSize(125, 16);
 #endif
 	this->statusBar()->addPermanentWidget(this->ramLabel);
 	this->statusBar()->addPermanentWidget(this->ramBar);
@@ -108,15 +108,12 @@ void ConversionProgressDialog::showEvent(QShowEvent *event)
 {
 	this->QMainWindow::showEvent(event);
 	if(!this->taskBarButton->window()) {
-		auto parent = this->parentWidget();
-		if(parent) {
-			this->taskBarButton->setWindow(parent->windowHandle());
-			auto bar = this->taskBarButton->progress();
-			bar->setRange(0, this->fileModel->allItems().size());
-			bar->show();
-			connect(this->cacher, &VideoLoader::progressUpdate,
-					bar, &QWinTaskbarProgress::setValue);
-		}
+		this->taskBarButton->setWindow(this->windowHandle());
+		auto bar = this->taskBarButton->progress();
+		bar->setRange(0, this->fileModel->allItems().size());
+		bar->show();
+		connect(this->assembler, &VideoLoader::progressUpdate,
+				bar, &QWinTaskbarProgress::setValue);
 	}
 }
 #endif
@@ -125,18 +122,20 @@ void ConversionProgressDialog::closeEvent(QCloseEvent *event)
 {
 	if(this->canClose)
 		event->accept();
-	else if(!this->isAborting) {
+	else {
 		event->ignore();
-		bool checked = false;
-		DialogMaster::MessageBoxInfo config = DialogMaster::createQuestion(tr("Do you realy want to cancel the conversion? All movies that "
-																			  "have not been completed will be discarded."),
-																		   this);
-		config.title = tr("Cancel conversion?");
-		config.checked = &checked;
-		config.checkString = tr("Delete already completed conversions");
-		if(DialogMaster::msgBox(config) == QMessageBox::Yes) {
-			this->isAborting = true;
-			this->loader->abortChain();
+		if(!this->isAborting) {
+			if(DialogMaster::question(this,
+									  tr("All movies that have not been completed will be discarded. Movies already "
+										 "converted will not be deleted. If you activated original file deletion, those "
+										 "will be already deleted and not restored."),
+									  tr("Do you realy want to cancel the conversion?"),
+									  tr("Cancel conversion?"))
+			   == QMessageBox::Yes) {
+				this->isAborting = true;
+				this->loader->abortChain();
+				this->postMessage(Q_NULLPTR, tr("Aborting. Please wait…"), QMessageBox::Warning, false);
+			}
 		}
 	}
 }
@@ -199,7 +198,14 @@ void ConversionProgressDialog::lastFinished()
 {
 	this->canClose = true;
 	if(this->isAborting) {
-		DialogMaster::information(this, tr("Abort completed!"));
+		this->postMessage(Q_NULLPTR, tr("Aborting successfully completed."), QMessageBox::Warning, false);
+		if(DialogMaster::information(this,
+									 tr("You can now check the output and close the application."),
+									 tr("Abort completed!"),
+									 tr("Abort"),
+									 QMessageBox::Ok | QMessageBox::Close)
+			== QMessageBox::Close)
+			this->close();
 	} else {
 		bool openAll = false;
 		auto config = DialogMaster::createInformation(QString(), this);

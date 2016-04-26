@@ -37,7 +37,8 @@ SOURCES += main.cpp \
     converterstream.cpp \
     cachinggenerator.cpp \
     advancedoptionsdialog.cpp \
-    apngassembler.cpp
+    apngassembler.cpp \
+    piedrawer.cpp
 
 HEADERS += \
     videoloader.h \
@@ -52,7 +53,8 @@ HEADERS += \
     converterstream.h \
     cachinggenerator.h \
     advancedoptionsdialog.h \
-    apngassembler.h
+    apngassembler.h \
+    piedrawer.h
 
 FORMS += \
     mainwindow.ui \

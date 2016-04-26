@@ -50,7 +50,9 @@ public:
 	inline QString statusText() const {
 		return ConvertFileInfo::textForStatus(this->status());
 	}
-	QString resultText() const;
+	QString resultText() const;	
+	int currentProgress() const;
+	QString progressText() const;
 
 	//internal functions
 	QLinkedList<ImageInfo> imageData() const;
@@ -66,10 +68,15 @@ public:
 public slots:
 	void updateStatus(ConvertFileInfo::Status status);
 	void setResultText(const QString &text);
+	void setCurrentProgress(int progress);
+	void setCurrentProgress(int value, int maximum);
+	void setProgressBaseText(QString progressText);
+	void resetProgress();
 
 signals:
 	void statusChanged(ConvertFileInfo::Status status);
 	void resultTextChanged(QString resultText);
+	void currentProgressChanged();
 
 private:
 	const QString origFileName;
@@ -77,6 +84,8 @@ private:
 	QString currentStatusText;
 	QLinkedList<ImageInfo> convertData;
 	QScopedPointer<QTemporaryDir> cachingDir;
+	int currentProg;
+	QString progressBaseText;
 };
 
 #endif // CONVERTFILEINFO_H

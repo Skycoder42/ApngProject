@@ -25,14 +25,17 @@ void ImageTransformator::handleNext()
 {
 	QtConcurrent::run([this](){
 		auto info = this->current();
+		info->setProgressBaseText(tr("%1% transformed"));
 		info->updateStatus(ConvertFileInfo::Transforming);
 		double minDelay = this->setup.frameRate > 0.0 ? 1000.0/this->setup.frameRate : 1.0;
 		double delayCounter = std::numeric_limits<double>::infinity();
 
 		int prevCount = info->imageData().size();
+		int cnt = 0;
 		bool didExceed = false;
 		ConvertFileInfo::ImageIterator lastIter;
 		for(ConvertFileInfo::ImageIterator it = info->imageBegin(); it != info->imageEnd();) {
+			info->setCurrentProgress(cnt++, prevCount);
 			if(this->wasAborted()) {
 				QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 				return;
@@ -46,7 +49,6 @@ void ImageTransformator::handleNext()
 				it = info->removeFrame(it);
 			} else {
 				if(this->setup.size > 0) {
-					//TODO allow only shrink
 					image.first = image.first.scaled(QSize(this->setup.size, this->setup.size),
 													 Qt::KeepAspectRatio,
 													 Qt::SmoothTransformation);
@@ -60,6 +62,7 @@ void ImageTransformator::handleNext()
 				++it;
 			}
 		}
+		info->setCurrentProgress(100);
 
 		if(didExceed && this->setup.frameRate == 0.0) {
 			emit showMessage(info,
@@ -72,6 +75,7 @@ void ImageTransformator::handleNext()
 		else
 			emit showMessage(info, tr("Finished Transformation. No frames had to be removed!"));
 
+		info->resetProgress();
 		info->updateStatus(ConvertFileInfo::Transformed);
 		QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 	});

@@ -62,7 +62,8 @@ void ApngAssembler::handleNext()
 			this, &ApngAssembler::processFinished);
 
 	info->updateStatus(ConvertFileInfo::Saving);
-	this->currentProcess->start(QIODevice::ReadOnly);
+	info->setProgressBaseText(tr("Running apngasm.exe…"));
+	this->currentProcess->start(QIODevice::ReadOnly | QIODevice::Unbuffered);
 }
 
 bool ApngAssembler::tearDown()
@@ -76,6 +77,8 @@ bool ApngAssembler::tearDown()
 
 void ApngAssembler::abort()
 {
+	if(this->currentProcess)
+		this->currentProcess->kill();
 }
 
 QString ApngAssembler::lastError()
@@ -86,13 +89,16 @@ QString ApngAssembler::lastError()
 void ApngAssembler::processError(QProcess::ProcessError error)
 {
 	if(this->currentProcess) {
-		auto info = this->current();
-		info->updateStatus(ConvertFileInfo::Error);
-		emit showMessage(info,
-						 tr("Failed to run apngasm.exe with error (Code: %1): %2")
-						 .arg(error)
-						 .arg(this->currentProcess->errorString()),
-						 QMessageBox::Critical);
+		if(!this->wasAborted()) {
+			auto info = this->current();
+			info->updateStatus(ConvertFileInfo::Error);
+			info->resetProgress();
+			emit showMessage(info,
+							 tr("Failed to run apngasm.exe with error (Code: %1): %2")
+							 .arg(error)
+							 .arg(this->currentProcess->errorString()),
+							 QMessageBox::Critical);
+		}
 		this->currentProcess->deleteLater();
 		this->currentProcess = Q_NULLPTR;
 		QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
@@ -103,24 +109,27 @@ void ApngAssembler::processFinished(int exitCode, QProcess::ExitStatus exitStatu
 {
 	if(this->currentProcess) {
 		if(exitStatus == QProcess::NormalExit) {
-			auto info = this->current();
-			if(exitCode == 0) {
-				info->setResultText(this->currentProcess->arguments().first());
-				info->updateStatus(ConvertFileInfo::Success);
-				info->cacheDir()->remove();//TODO async
-				info->setCacheDir(Q_NULLPTR);
-				emit showMessage(info,
-								 tr("Saved image successfully as \"%1\"")
-								 .arg(info->resultText()),
-								 QMessageBox::Information,
-								 false);
-			} else {
-				info->updateStatus(ConvertFileInfo::Error);
-				emit showMessage(info,
-								 tr("apngasm.exe failed with exit code %1.")
-								 .arg(exitCode),
-								 QMessageBox::Critical);
-				qDebug(qPrintable(this->currentProcess->readAll()));
+			if(!this->wasAborted()) {
+				auto info = this->current();
+				info->resetProgress();
+				if(exitCode == 0) {
+					info->setResultText(this->currentProcess->arguments().first());
+					info->updateStatus(ConvertFileInfo::Success);
+					info->cacheDir()->remove();
+					info->setCacheDir(Q_NULLPTR);
+					emit showMessage(info,
+									 tr("Saved image successfully as \"%1\"")
+									 .arg(info->resultText()),
+									 QMessageBox::Information,
+									 false);
+				} else {
+					info->updateStatus(ConvertFileInfo::Error);
+					emit showMessage(info,
+									 tr("apngasm.exe failed with exit code %1.")
+									 .arg(exitCode),
+									 QMessageBox::Critical);
+					qDebug(qPrintable(this->currentProcess->readAll()));
+				}
 			}
 			this->currentProcess->deleteLater();
 			this->currentProcess = Q_NULLPTR;

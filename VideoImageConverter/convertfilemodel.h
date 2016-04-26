@@ -6,6 +6,7 @@
 #include <QFileIconProvider>
 #include <QScopedPointer>
 #include "convertfileinfo.h"
+#include "piedrawer.h"
 
 class ConvertFileModel : public QAbstractTableModel
 {
@@ -27,11 +28,12 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
 private slots:
-	void reloadInfo();
+	void reloadInfo(int column);
 
 private:
 	QList<ConvertFileInfo*> fileItems;
 	QScopedPointer<QFileIconProvider> iconProvider;
+	QScopedPointer<PieDrawer> pieDrawer;
 };
 
 #endif // CONVERTFILEMODEL_H

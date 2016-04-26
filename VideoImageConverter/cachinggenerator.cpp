@@ -29,6 +29,7 @@ void CachingGenerator::handleNext()
 {
 	QtConcurrent::run([this](){
 		auto info = this->current();
+		info->setProgressBaseText(tr("%1% cached"));
 		info->updateStatus(ConvertFileInfo::Caching);
 
 		QFileInfo origFileInfo(info->filename());
@@ -58,7 +59,9 @@ void CachingGenerator::handleNext()
 
 		QDir rDir(tempDir->path());
 		int cnt = 0;
+		int max = info->imageData().size();
 		for(ConvertFileInfo::ImageIterator it = info->imageBegin(), end = info->imageEnd(); it != end; ++it, ++cnt) {
+			info->setCurrentProgress(cnt, max);
 			if(this->wasAborted()) {
 				info->cacheDir()->remove();
 				QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
@@ -92,9 +95,11 @@ void CachingGenerator::handleNext()
 				return;
 			}
 		}
+		info->setCurrentProgress(100);
 
 		info->resetImageData();
 		info->updateStatus(ConvertFileInfo::Cached);
+		info->resetProgress();
 		emit showMessage(info, tr("Frames successfully cached."));
 		QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 	});

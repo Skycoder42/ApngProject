@@ -57,6 +57,7 @@ void VideoLoader::handleNext()
 		return;
 	if(RamManager::ramUsageOk()) {
 		auto info = this->current();
+		info->setProgressBaseText(tr("Reading video frames…"));
 		info->updateStatus(ConvertFileInfo::Converting);
 		this->readPlayer->setMedia(QUrl::fromLocalFile(info->filename()));
 		this->readPlayer->play();
@@ -116,6 +117,7 @@ void VideoLoader::playerError(QMediaPlayer::Error error)
 
 	this->readPlayer->stop();
 	auto info = this->current();
+	info->resetProgress();
 	info->updateStatus(ConvertFileInfo::Error);
 	emit showMessage(info,
 					 tr("Failed to convert with error (Code %1): %2")
@@ -128,6 +130,7 @@ void VideoLoader::playerError(QMediaPlayer::Error error)
 void VideoLoader::saveImageData()
 {
 	auto info = this->current();
+	info->resetProgress();
 	info->updateStatus(ConvertFileInfo::Converted);
 	info->setImageData(this->imageData);
 	emit showMessage(info, tr("Finished conversion successfully"));
