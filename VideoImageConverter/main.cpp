@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QUrl>
 #include "mainwindow.h"
+#include "conversionprogressdialog.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +20,9 @@ int main(int argc, char *argv[])
 	qRegisterMetaType<QMessageBox::Icon>();
 
 	MainWindow w;
+	ConversionProgressDialog c;
+	QObject::connect(&w, &MainWindow::startConversion,
+					 &c, &ConversionProgressDialog::startConversion);
 	w.show();
 
 	return a.exec();

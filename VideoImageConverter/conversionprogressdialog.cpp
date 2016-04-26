@@ -73,7 +73,7 @@ ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
 	//settings stuff
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("progressWindow"));
-	this->restoreGeometry(settings.value(QStringLiteral("geom")).toByteArray());
+	this->resize(settings.value(QStringLiteral("size")).toSize());
 	this->restoreState(settings.value(QStringLiteral("state")).toByteArray());
 	this->ui->progressTreeView->header()->restoreState(settings.value(QStringLiteral("header")).toByteArray());
 	settings.endGroup();
@@ -83,7 +83,7 @@ ConversionProgressDialog::~ConversionProgressDialog()
 {
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("progressWindow"));
-	settings.setValue(QStringLiteral("geom"), this->saveGeometry());
+	settings.setValue(QStringLiteral("size"), this->size());
 	settings.setValue(QStringLiteral("state"), this->saveState());
 	settings.setValue(QStringLiteral("header"), this->ui->progressTreeView->header()->saveState());
 	settings.endGroup();
@@ -123,10 +123,10 @@ void ConversionProgressDialog::showEvent(QShowEvent *event)
 
 void ConversionProgressDialog::closeEvent(QCloseEvent *event)
 {
-	event->ignore();
 	if(this->canClose)
-		qApp->quit();
+		event->accept();
 	else if(!this->isAborting) {
+		event->ignore();
 		bool checked = false;
 		DialogMaster::MessageBoxInfo config = DialogMaster::createQuestion(tr("Do you realy want to cancel the conversion? All movies that "
 																			  "have not been completed will be discarded."),

@@ -10,6 +10,12 @@
 #include <QtConcurrent>
 #include "advancedoptionsdialog.h"
 
+#include "convertfilemodel.h"
+#include "videoloader.h"
+#include "imagetransformator.h"
+#include "cachinggenerator.h"
+#include "apngassembler.h"
+
 #define SEPERATOR(parent) [&]() -> QAction* {\
 	auto action = new QAction(parent);\
 	action->setSeparator(true);\
@@ -37,8 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
 					Qt::WindowCloseButtonHint |
 					Qt::WindowMinMaxButtonsHint),
 	ui(new Ui::MainWindow),
-	iconProvider(new QFileIconProvider()),
-	mainConverter(new ConversionProgressDialog(this))
+	iconProvider(new QFileIconProvider())
 {
 	this->ui->setupUi(this);
 	this->updateSliderTooltip(this->ui->targetSpeedRelativeSlider, true);
@@ -128,10 +133,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionAdd_Files_triggered()
 {
+	QSettings settings;
+	settings.beginGroup(QStringLiteral("defaultFilter"));
+	QString selectedFilter = settings.value(QStringLiteral("defaultFilter")).toString();
 	auto files = DialogMaster::getOpenFileNames(this,
 												tr("Open video files"),
 												QStandardPaths::writableLocation(QStandardPaths::MoviesLocation),
-												supportedFormatsString);
+												supportedFormatsString,
+												&selectedFilter);
+	settings.setValue(QStringLiteral("defaultFilter"), selectedFilter);
+	settings.endGroup();
 	foreach (auto file, files) {
 		new QListWidgetItem(this->iconProvider->icon(file),
 							file,
@@ -252,7 +263,8 @@ void MainWindow::on_startConversionButton_clicked()
 													   this->ui->keepColorTypeCheckBox->isChecked(),
 													   type,
 													   this->ui->compressionIterationsSpinBox->value()));
-		this->mainConverter->startConversion(files, setup);
+		emit startConversion(files, setup);
+		this->close();
 	}
 }
 

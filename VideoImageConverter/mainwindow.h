@@ -5,7 +5,7 @@
 #include <QSlider>
 #include <QFileIconProvider>
 #include <QScopedPointer>
-#include "conversionprogressdialog.h"
+#include "converterstream.h"
 
 namespace Ui {
 	class MainWindow;
@@ -18,6 +18,9 @@ class MainWindow : public QDialog
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
+
+signals:
+	void startConversion(const QStringList &files, QList<ConverterStream::SetupInfo *> setup);
 
 private slots:
 	void on_actionAdd_Files_triggered();
@@ -39,8 +42,6 @@ private:
 
 	Ui::MainWindow *ui;
 	QScopedPointer<QFileIconProvider> iconProvider;
-
-	ConversionProgressDialog *mainConverter;
 
 	void getFolderFiles(bool recursive);
 	Q_INVOKABLE void addFileItem(const QString &file);
