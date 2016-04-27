@@ -66,5 +66,6 @@ RESOURCES += \
 
 # make targets
 cpapngasm.path = $$OUT_PWD/debug
+#cpapngasm.path = $$OUT_PWD/release
 cpapngasm.files += $$PWD/../apngasm.exe
 INSTALLS += cpapngasm

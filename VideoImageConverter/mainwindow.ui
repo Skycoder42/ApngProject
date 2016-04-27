@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>432</height>
+    <height>413</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -122,6 +122,16 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="targetSizeLabel">
+            <property name="text">
+             <string>Target &amp;size (adjusted):</string>
+            </property>
+            <property name="buddy">
+             <cstring>targetSizeSpinBox</cstring>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="1">
            <widget class="QSpinBox" name="targetSizeSpinBox">
             <property name="buttonSymbols">
@@ -144,6 +154,41 @@
             </property>
             <property name="maximum">
              <number>2147483647</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="frameRateLabel">
+            <property name="text">
+             <string>Limit &amp;Frame rate:</string>
+            </property>
+            <property name="buddy">
+             <cstring>frameRateDoubleSpinBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="frameRateDoubleSpinBox">
+            <property name="specialValueText">
+             <string>Automatic (unlimited if possible)</string>
+            </property>
+            <property name="accelerated">
+             <bool>true</bool>
+            </property>
+            <property name="correctionMode">
+             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+            </property>
+            <property name="showGroupSeparator" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="suffix">
+             <string> FPS</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -298,68 +343,6 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
-           <widget class="QCheckBox" name="deleteOriginalFilesCheckBox">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="deleteOriginalFilesLabel">
-            <property name="text">
-             <string>&amp;Delete original files:</string>
-            </property>
-            <property name="buddy">
-             <cstring>deleteOriginalFilesCheckBox</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="frameRateDoubleSpinBox">
-            <property name="specialValueText">
-             <string>Automatic (unlimited if possible)</string>
-            </property>
-            <property name="accelerated">
-             <bool>true</bool>
-            </property>
-            <property name="correctionMode">
-             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-            </property>
-            <property name="showGroupSeparator" stdset="0">
-             <bool>true</bool>
-            </property>
-            <property name="suffix">
-             <string> FPS</string>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>1000.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="targetSizeLabel">
-            <property name="text">
-             <string>Target &amp;size (adjusted):</string>
-            </property>
-            <property name="buddy">
-             <cstring>targetSizeSpinBox</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="frameRateLabel">
-            <property name="text">
-             <string>Limit &amp;Frame rate:</string>
-            </property>
-            <property name="buddy">
-             <cstring>frameRateDoubleSpinBox</cstring>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -466,7 +449,6 @@
   <tabstop>modeZlibButton</tabstop>
   <tabstop>modeZopfliButton</tabstop>
   <tabstop>compressionIterationsSpinBox</tabstop>
-  <tabstop>deleteOriginalFilesCheckBox</tabstop>
   <tabstop>startConversionButton</tabstop>
   <tabstop>advancedOptionsButton</tabstop>
  </tabstops>
