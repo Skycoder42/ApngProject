@@ -15,15 +15,22 @@ class CachedApngDisassembler : public QObject
 	Q_OBJECT
 public:
 	explicit CachedApngDisassembler(QObject *parent = 0);
+	~CachedApngDisassembler();
 
 	static bool testDeviceReadable(QIODevice *device, const QByteArray &format);
 	static ApngImageHandler *createHandler(QIODevice *device, const QByteArray &format);
+
+private://functions
+	void initDatabase();
+
+	bool loadIntoCache(QFileDevice *device);
 
 private:
 	static QByteArrayList formats;
 
 	QDir cacheFolder;
 	int cacheLimit;
+	QString disAsmPath;
 	QSqlDatabase cacheDB;
 };
 

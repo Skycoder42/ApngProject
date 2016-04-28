@@ -25,3 +25,6 @@ unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+RESOURCES += \
+    qpng_res.qrc
