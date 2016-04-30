@@ -14,6 +14,8 @@ class CachedApngDisassembler : public QObject
 {
 	Q_OBJECT
 public:
+	typedef QList<QPair<QString, QString>> CacheInfoList;
+
 	explicit CachedApngDisassembler(QObject *parent = 0);
 	~CachedApngDisassembler();
 
@@ -24,16 +26,23 @@ private://functions
 	void initDatabase();
 
 	bool loadIntoCache(QFileDevice *device);
+	Q_INVOKABLE void startCleanup();
+	Q_INVOKABLE void removeEntries(const CachedApngDisassembler::CacheInfoList &cacheInfoList, int firstRemoveIndex);
+	void removeCacheDir(const QString &cacheDirName, bool async);
 
 private:
 	static QByteArrayList formats;
+	static QString databaseName;
 
 	QDir cacheFolder;
 	int cacheLimit;
 	QString disAsmPath;
 	QSqlDatabase cacheDB;
+
+	bool isCleaning;
 };
 
 Q_DECLARE_LOGGING_CATEGORY(apngLogger)
+Q_DECLARE_METATYPE(CachedApngDisassembler::CacheInfoList)
 
 #endif // CACHEDAPNGDISASSEMBLER_H

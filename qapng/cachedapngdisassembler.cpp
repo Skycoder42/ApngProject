@@ -3,22 +3,31 @@
 #include <QSqlQuery>
 #include <QDateTime>
 #include <QProcess>
+#include <QtConcurrent>
 
-#define DB_ERROR() qCCritical(apngLogger) << this->cacheDB.lastError().text()
-#define QUERY_ERROR(query) qCCritical(apngLogger) << query.lastError().text()
+#define DB_ERROR(message) qCCritical(apngLogger) << message << "with error:" << this->cacheDB.lastError().text()
+#define QUERY_ERROR(message, query) qCCritical(apngLogger) << message << "with error:" << query.lastError().text()
 
 Q_LOGGING_CATEGORY(apngLogger, "qapng")
 
 QByteArrayList CachedApngDisassembler::formats = {"apng"};
+QString CachedApngDisassembler::databaseName = QStringLiteral("APNG_IMAGE_PLUGIN_DATABASE");
 
 Q_GLOBAL_STATIC(CachedApngDisassembler, instance)
+
+//startup
+void dllStartup() {
+	qRegisterMetaType<CachedApngDisassembler::CacheInfoList>();
+}
+Q_COREAPP_STARTUP_FUNCTION(dllStartup)
 
 CachedApngDisassembler::CachedApngDisassembler(QObject *parent) :
 	QObject(parent),
 	cacheFolder(QDir::temp()),
-	cacheLimit(1024),//MB -> 1GB
+	cacheLimit(2048),//MB -> 2GB
 	disAsmPath(),
-	cacheDB()
+	cacheDB(),
+	isCleaning(false)
 {
 	qsrand(QDateTime::currentMSecsSinceEpoch());
 
@@ -47,12 +56,12 @@ CachedApngDisassembler::CachedApngDisassembler(QObject *parent) :
 	}
 
 	this->cacheDB = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"),
-											  QStringLiteral("APNG_IMAGE_PLUGIN_DATABASE"));
+											  CachedApngDisassembler::databaseName);
 	if(!this->cacheDB.isValid())
-		DB_ERROR();
+		DB_ERROR("Failed to create a new database connection");
 	this->cacheDB.setDatabaseName(this->cacheFolder.absoluteFilePath(QStringLiteral("cacheIndex.db")));
 	if(!this->cacheDB.open())
-		DB_ERROR();
+		DB_ERROR("Failed to open the caching database");
 
 	this->cacheFolder.mkdir(QStringLiteral("data"));
 	this->cacheFolder.cd(QStringLiteral("data"));
@@ -63,7 +72,7 @@ CachedApngDisassembler::~CachedApngDisassembler()
 {
 	this->cacheDB.close();
 	this->cacheDB = QSqlDatabase();
-	QSqlDatabase::removeDatabase(QStringLiteral("APNG_IMAGE_PLUGIN_DATABASE"));
+	QSqlDatabase::removeDatabase(CachedApngDisassembler::databaseName);
 }
 
 bool CachedApngDisassembler::testDeviceReadable(QIODevice *device, const QByteArray &format)
@@ -90,6 +99,8 @@ ApngImageHandler *CachedApngDisassembler::createHandler(QIODevice *device, const
 	if(device && CachedApngDisassembler::testDeviceReadable(device, format)) {
 		auto fDevice = static_cast<QFileDevice*>(device);
 		if(instance->loadIntoCache(fDevice)) {
+			QMetaObject::invokeMethod(instance, "startCleanup", Qt::QueuedConnection);
+
 			auto handler = new ApngImageHandler();
 			handler->setDevice(device);
 			handler->setFormat(format);
@@ -107,13 +118,13 @@ void CachedApngDisassembler::initDatabase()
 		this->cacheDB.exec(QStringLiteral("CREATE TABLE ApngCache ("
 						   "	FileName			TEXT NOT NULL UNIQUE,"
 						   "	FileSize			INTEGER NOT NULL,"
-						   "	CreationDate		TEXT NOT NULL,"
 						   "	ModificationDate	TEXT NOT NULL,"
+						   "	LastRequested		TEXT NOT NULL,"
 						   "	CacheFolder			TEXT NOT NULL"
 						   ");"));
 		auto error = this->cacheDB.lastError();
 		if(error.type() != QSqlError::NoError)
-			DB_ERROR();
+			DB_ERROR("Failed to initialize database");
 	}
 }
 
@@ -123,24 +134,25 @@ bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 
 	//get the name and check if the entry exists
 	QSqlQuery testExistsQuery(this->cacheDB);
-	testExistsQuery.prepare(QStringLiteral("SELECT FileSize, CreationDate, ModificationDate, CacheFolder "
+	testExistsQuery.prepare(QStringLiteral("SELECT FileSize, ModificationDate, CacheFolder "
 										   "FROM ApngCache "
 										   "WHERE FileName == ?"));
 	testExistsQuery.addBindValue(info.absoluteFilePath());
 	if(!testExistsQuery.exec()) {
-		QUERY_ERROR(testExistsQuery);
+		QUERY_ERROR("Failed to get caching information", testExistsQuery);
 		return false;
 	}
 
 	bool hasValue = false;
+	QString deleteCacheDir;
 	if(testExistsQuery.first()) {
 		//make shure it's the same (unchanged) file
+		auto lastMod = testExistsQuery.value(1).toDateTime();
+		lastMod.setTimeSpec(Qt::UTC);
 		if(info.size() != testExistsQuery.value(0) ||
-		   info.created() != testExistsQuery.value(1).toDateTime() ||
-		   info.lastModified() != testExistsQuery.value(2).toDateTime()) {
+		   info.lastModified().toUTC() != lastMod) {
 			qCInfo(apngLogger) << "file" << info.absoluteFilePath() << "has to be re-created";
-
-			//TODO remove cache-dir recursivley
+			deleteCacheDir = testExistsQuery.value(2).toString();
 		} else
 			hasValue = true;
 	}
@@ -184,19 +196,103 @@ bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 
 		QSqlQuery addFileQuery(this->cacheDB);
 		addFileQuery.prepare(QStringLiteral("INSERT OR REPLACE INTO ApngCache "
-							 "(FileName, FileSize, CreationDate, ModificationDate, CacheFolder) "
+							 "(FileName, FileSize, ModificationDate, LastRequested, CacheFolder) "
 							 "VALUES(?, ?, ?, ?, ?)"));
 		addFileQuery.addBindValue(info.absoluteFilePath());
 		addFileQuery.addBindValue(info.size());
-		addFileQuery.addBindValue(info.created());
-		addFileQuery.addBindValue(info.lastModified());
+		addFileQuery.addBindValue(info.lastModified().toUTC());
+		addFileQuery.addBindValue(QDateTime::currentDateTimeUtc());
 		addFileQuery.addBindValue(cacheDirName);
 		if(!addFileQuery.exec()) {
-			QUERY_ERROR(testExistsQuery);
+			QUERY_ERROR("Failed to add new caching info", testExistsQuery);
 			return false;
 		}
+
+		if(!deleteCacheDir.isNull())
+			this->removeCacheDir(deleteCacheDir, true);
 		hasValue = true;
 	}
 
 	return hasValue;
+}
+
+void CachedApngDisassembler::startCleanup()
+{
+	if(!this->isCleaning) {
+		QSqlQuery query(this->cacheDB);
+		if(!query.exec(QStringLiteral("SELECT FileName, CacheFolder "
+									  "FROM ApngCache "
+									  "ORDER BY LastRequested DESC"))) {
+			QUERY_ERROR("Failed to get caching status", query);
+			return;
+		}
+		this->isCleaning = true;
+
+		QList<QPair<QString, QString>> dbStatus;
+		while(query.next())
+			dbStatus.append({query.value(0).toString(), query.value(1).toString()});
+
+		//setp 1 -> remove cache folders not in the list;
+		QtConcurrent::run([=]() {
+			//TODO remove unused without the dange of removing wip cache folders
+//			foreach (auto dir, this->cacheFolder.entryList(QDir::AllDirs | QDir::NoDotAndDotDot)) {
+//				bool found = false;
+//				foreach (auto status, dbStatus) {
+//					if(dir == status.second) {
+//						found = true;
+//						break;
+//					}
+//				}
+//				if(!found)
+//					this->removeCacheDir(dir, false);
+//			}
+
+			//"accept" all dirs until limit is reached
+			quint64 maxSize = (quint64)this->cacheLimit * 1024*1024;
+			quint64 currentSize = 0;
+			int i, max;
+			for(i = 0, max = dbStatus.size(); i < max; i++) {
+				QDir subSearchDir(this->cacheFolder.absoluteFilePath(dbStatus[i].second));
+				subSearchDir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+				QDirIterator subCacheIterator(subSearchDir, QDirIterator::Subdirectories);
+				while(subCacheIterator.hasNext()) {
+					subCacheIterator.next();
+					currentSize += (quint64)subCacheIterator.fileInfo().size();
+				}
+
+				if(currentSize > maxSize)
+					break;
+			}
+
+			QMetaObject::invokeMethod(this, "removeEntries", Qt::QueuedConnection,
+									  Q_ARG(CachedApngDisassembler::CacheInfoList, dbStatus),
+									  Q_ARG(int, i));
+		});
+	}
+}
+
+void CachedApngDisassembler::removeEntries(const CachedApngDisassembler::CacheInfoList &cacheInfoList, int firstRemoveIndex)
+{
+	for(int i = firstRemoveIndex, max = cacheInfoList.size(); i < max; ++i) {
+		QSqlQuery removeQuery(this->cacheDB);
+		removeQuery.prepare(QStringLiteral("DELETE FROM ApngCache WHERE FileName = ?"));
+		removeQuery.addBindValue(cacheInfoList[i].first);
+		if(!removeQuery.exec())
+			QUERY_ERROR("Failed to remove entry from cache", removeQuery);
+		else {
+			qCInfo(apngLogger) << "Removing cached entry" << cacheInfoList[i].first;
+			this->removeCacheDir(cacheInfoList[i].second, true);
+		}
+	}
+
+	this->isCleaning = false;
+}
+
+void CachedApngDisassembler::removeCacheDir(const QString &cacheDirName, bool async)
+{
+	QDir oldCacheDir(this->cacheFolder.absoluteFilePath(cacheDirName));
+	if(async)
+		QtConcurrent::run(oldCacheDir, &QDir::removeRecursively);
+	else
+		oldCacheDir.removeRecursively();
 }
