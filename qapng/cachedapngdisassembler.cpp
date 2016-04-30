@@ -130,6 +130,7 @@ void CachedApngDisassembler::initDatabase()
 
 bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 {
+	QReadLocker locker(&this->cacheLock);
 	QFileInfo info(device->fileName());
 
 	//get the name and check if the entry exists
@@ -159,6 +160,9 @@ bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 
 	//add the file if not existing
 	if(!hasValue) {
+		locker.unlock();
+		QWriteLocker writeLocker(&this->cacheLock);
+
 		//create caching folder
 		QString cacheDirName;
 		do {
@@ -219,6 +223,7 @@ bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 void CachedApngDisassembler::startCleanup()
 {
 	if(!this->isCleaning) {
+		this->cacheLock.lockForRead();
 		QSqlQuery query(this->cacheDB);
 		if(!query.exec(QStringLiteral("SELECT FileName, CacheFolder "
 									  "FROM ApngCache "
@@ -273,6 +278,8 @@ void CachedApngDisassembler::startCleanup()
 
 void CachedApngDisassembler::removeEntries(const CachedApngDisassembler::CacheInfoList &cacheInfoList, int firstRemoveIndex)
 {
+	this->cacheLock.unlock();
+	QWriteLocker locker(&this->cacheLock);
 	for(int i = firstRemoveIndex, max = cacheInfoList.size(); i < max; ++i) {
 		QSqlQuery removeQuery(this->cacheDB);
 		removeQuery.prepare(QStringLiteral("DELETE FROM ApngCache WHERE FileName = ?"));

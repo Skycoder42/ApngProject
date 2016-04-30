@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QDir>
 #include <QLoggingCategory>
+#include <QReadWriteLock>
 #include "apngimagehandler.h"
 
 #define CACHE_FOLDER_ENVIRONMENT_VAR "QAPNG_PLUGIN_CACHE_FOLDER"
@@ -38,6 +39,7 @@ private:
 	int cacheLimit;
 	QString disAsmPath;
 	QSqlDatabase cacheDB;
+	QReadWriteLock cacheLock;
 
 	bool isCleaning;
 };
