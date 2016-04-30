@@ -1,71 +1,107 @@
 #include "apngimagehandler.h"
 
-ApngImageHandler::ApngImageHandler()
-{
+const QString ApngImageHandler::metaFileName(QStringLiteral("meta.ini"));
+const QString ApngImageHandler::metaName(QStringLiteral("metadata"));
+const QString ApngImageHandler::frameKey(QStringLiteral("frame"));
+const QString ApngImageHandler::delayKey(QStringLiteral("delay"));
 
+ApngImageHandler::ApngImageHandler(const QString &cacheDir) :
+	QImageIOHandler(),
+	cacheDir(cacheDir),
+	metaSettings(this->cacheDir.absoluteFilePath(ApngImageHandler::metaFileName), QSettings::IniFormat),
+	frameCount(this->metaSettings.beginReadArray(ApngImageHandler::metaName)),
+	currentArrayIndex(0),
+	imageCache()
+{
+	this->metaSettings.setArrayIndex(this->currentArrayIndex);
 }
 
+ApngImageHandler::~ApngImageHandler()
+{
+	this->metaSettings.endArray();
+}
 
 QByteArray ApngImageHandler::name() const
 {
-	return QByteArray();
+	return "apng";
 }
 
 bool ApngImageHandler::canRead() const
 {
-	return false;
+	return this->frameCount > 0;
 }
 
 bool ApngImageHandler::read(QImage *image)
 {
-	return false;
+	if(!this->imageCache.contains(this->currentArrayIndex)) {
+		auto fileName = this->metaSettings.value(ApngImageHandler::frameKey).toString() + QStringLiteral(".png");
+		this->imageCache.insert(this->currentArrayIndex, QImage(this->cacheDir.absoluteFilePath(fileName), "png"));
+	}
+
+	*image = this->imageCache[this->currentArrayIndex];
+	if(++this->currentArrayIndex >= this->frameCount)
+		this->currentArrayIndex = 0;
+	this->metaSettings.setArrayIndex(this->currentArrayIndex);
+	return !image->isNull();
 }
 
 QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
 {
-	return QVariant();
-}
-
-void ApngImageHandler::setOption(QImageIOHandler::ImageOption option, const QVariant &value)
-{
+	switch(option) {
+	case QImageIOHandler::IncrementalReading:
+	case QImageIOHandler::Animation:
+		return true;
+	default:
+		return QVariant();
+	}
 }
 
 bool ApngImageHandler::supportsOption(QImageIOHandler::ImageOption option) const
 {
-	return false;
+	switch(option) {
+	case QImageIOHandler::IncrementalReading:
+	case QImageIOHandler::Animation:
+		return true;
+	default:
+		return false;
+	}
 }
 
 bool ApngImageHandler::jumpToNextImage()
 {
-	return false;
+	if(this->currentArrayIndex < this->frameCount - 1) {
+		this->metaSettings.setArrayIndex(++this->currentArrayIndex);
+		return true;
+	} else
+		return false;
 }
 
 bool ApngImageHandler::jumpToImage(int imageNumber)
 {
-	return false;
+	if(imageNumber < this->frameCount - 1) {
+		this->currentArrayIndex = imageNumber;
+		this->metaSettings.setArrayIndex(imageNumber);
+		return true;
+	} else
+		return false;
 }
 
 int ApngImageHandler::loopCount() const
 {
-	return 0;
+	return -1;
 }
 
 int ApngImageHandler::imageCount() const
 {
-	return 0;
+	return this->frameCount;
 }
 
 int ApngImageHandler::nextImageDelay() const
 {
-	return 0;
+	return this->metaSettings.value(ApngImageHandler::delayKey).toInt();
 }
 
 int ApngImageHandler::currentImageNumber() const
 {
-	return 0;
-}
-
-QRect ApngImageHandler::currentImageRect() const
-{
-	return QRect();
+	return this->currentArrayIndex;
 }

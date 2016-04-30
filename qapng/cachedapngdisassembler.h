@@ -26,7 +26,9 @@ public:
 private://functions
 	void initDatabase();
 
-	bool loadIntoCache(QFileDevice *device);
+	QString assureInCache(QFileDevice *device);
+	QString loadIntoCache(const QFileInfo cacheFileInfo);
+	bool createMetaData(const QDir &cacheDir);
 	Q_INVOKABLE void startCleanup();
 	Q_INVOKABLE void removeEntries(const CachedApngDisassembler::CacheInfoList &cacheInfoList, int firstRemoveIndex);
 	void removeCacheDir(const QString &cacheDirName, bool async);

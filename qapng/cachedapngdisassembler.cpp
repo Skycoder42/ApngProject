@@ -35,10 +35,11 @@ CachedApngDisassembler::CachedApngDisassembler(QObject *parent) :
 		QDir tDir(QString::fromUtf8(qgetenv(CACHE_FOLDER_ENVIRONMENT_VAR)));
 		if(tDir.mkpath(QStringLiteral(".")))
 			this->cacheFolder = tDir;
+	} else {
+		this->cacheFolder.mkpath(QStringLiteral("apngImageCache"));
+		this->cacheFolder.cd(QStringLiteral("apngImageCache"));
 	}
-	this->cacheFolder.mkpath(QStringLiteral("apngImageCache"));
-	this->cacheFolder.cd(QStringLiteral("apngImageCache"));
-	this->cacheFolder.mkdir(QStringLiteral("data"));
+	this->cacheFolder.mkpath(QStringLiteral("data"));
 
 	this->disAsmPath = this->cacheFolder.absoluteFilePath(QStringLiteral("apngdis.exe"));
 	if(!QFile::exists(this->disAsmPath)) {
@@ -98,10 +99,10 @@ ApngImageHandler *CachedApngDisassembler::createHandler(QIODevice *device, const
 {
 	if(device && CachedApngDisassembler::testDeviceReadable(device, format)) {
 		auto fDevice = static_cast<QFileDevice*>(device);
-		if(instance->loadIntoCache(fDevice)) {
+		auto cacheDir = instance->assureInCache(fDevice);
+		if(!cacheDir.isEmpty()) {
 			QMetaObject::invokeMethod(instance, "startCleanup", Qt::QueuedConnection);
-
-			auto handler = new ApngImageHandler();
+			auto handler = new ApngImageHandler(instance->cacheFolder.absoluteFilePath(cacheDir));
 			handler->setDevice(device);
 			handler->setFormat(format);
 			return handler;
@@ -128,7 +129,7 @@ void CachedApngDisassembler::initDatabase()
 	}
 }
 
-bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
+QString CachedApngDisassembler::assureInCache(QFileDevice *device)
 {
 	QReadLocker locker(&this->cacheLock);
 	QFileInfo info(device->fileName());
@@ -141,10 +142,10 @@ bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 	testExistsQuery.addBindValue(info.absoluteFilePath());
 	if(!testExistsQuery.exec()) {
 		QUERY_ERROR("Failed to get caching information", testExistsQuery);
-		return false;
+		return QString();
 	}
 
-	bool hasValue = false;
+	QString cacheDir;
 	QString deleteCacheDir;
 	if(testExistsQuery.first()) {
 		//make shure it's the same (unchanged) file
@@ -155,69 +156,119 @@ bool CachedApngDisassembler::loadIntoCache(QFileDevice *device)
 			qCInfo(apngLogger) << "file" << info.absoluteFilePath() << "has to be re-created";
 			deleteCacheDir = testExistsQuery.value(2).toString();
 		} else
-			hasValue = true;
+			cacheDir = testExistsQuery.value(2).toString();
 	}
 
 	//add the file if not existing
-	if(!hasValue) {
+	if(cacheDir.isEmpty()) {
 		locker.unlock();
-		QWriteLocker writeLocker(&this->cacheLock);
-
-		//create caching folder
-		QString cacheDirName;
-		do {
-			cacheDirName.clear();
-			for(int i = 0; i < 8; i++)
-				cacheDirName += QString::number((short)qrand(), 16);
-			cacheDirName = cacheDirName.toUpper();
-		} while(QFile::exists(this->cacheFolder.absoluteFilePath(cacheDirName)) ||
-				!this->cacheFolder.mkdir(cacheDirName));
-
-		auto tempPath = this->cacheFolder.absoluteFilePath(cacheDirName + QLatin1Char('/') + info.fileName());
-		//read the image
-		if(!QFile::copy(info.absoluteFilePath(), tempPath)) {
-			qCCritical(apngLogger) << "failed to create working copy of original file";
-			this->cacheFolder.rmdir(cacheDirName);
-			return false;
-		}
-
-		//disassembler
-		QProcess process;
-		process.setProgram(this->disAsmPath);
-		process.setArguments({tempPath});
-		process.start(QIODevice::ReadOnly);
-		process.waitForFinished(-1);
-		if(process.exitStatus() != QProcess::NormalExit ||
-		   process.exitCode() != 0) {
-			qCCritical(apngLogger) << "Failed to dis-assembel file with error:" << process.errorString();
-			QDir(this->cacheFolder.absoluteFilePath(cacheDirName)).removeRecursively();
-			return false;
-		}
-
-		//remove temp file
-		if(!QFile::remove(tempPath))
-			qCWarning(apngLogger) << "Failed to remove working copy";
-
-		QSqlQuery addFileQuery(this->cacheDB);
-		addFileQuery.prepare(QStringLiteral("INSERT OR REPLACE INTO ApngCache "
-							 "(FileName, FileSize, ModificationDate, LastRequested, CacheFolder) "
-							 "VALUES(?, ?, ?, ?, ?)"));
-		addFileQuery.addBindValue(info.absoluteFilePath());
-		addFileQuery.addBindValue(info.size());
-		addFileQuery.addBindValue(info.lastModified().toUTC());
-		addFileQuery.addBindValue(QDateTime::currentDateTimeUtc());
-		addFileQuery.addBindValue(cacheDirName);
-		if(!addFileQuery.exec()) {
-			QUERY_ERROR("Failed to add new caching info", testExistsQuery);
-			return false;
-		}
-
-		if(!deleteCacheDir.isNull())
+		cacheDir = this->loadIntoCache(info);
+		if(!cacheDir.isEmpty() && !deleteCacheDir.isNull())
 			this->removeCacheDir(deleteCacheDir, true);
-		hasValue = true;
 	}
 
-	return hasValue;
+	return cacheDir;
+}
+
+QString CachedApngDisassembler::loadIntoCache(const QFileInfo cacheFileInfo)
+{
+	QWriteLocker writeLocker(&this->cacheLock);
+
+	//create caching folder
+	QString cacheDirName;
+	do {
+		cacheDirName.clear();
+		for(int i = 0; i < 8; i++)
+			cacheDirName += QString::number((short)qrand(), 16);
+		cacheDirName = cacheDirName.toUpper();
+	} while(QFile::exists(this->cacheFolder.absoluteFilePath(cacheDirName)) ||
+			!this->cacheFolder.mkdir(cacheDirName));
+
+	auto tempPath = this->cacheFolder.absoluteFilePath(cacheDirName + QLatin1Char('/') + cacheFileInfo.fileName());
+	//read the image
+	if(!QFile::copy(cacheFileInfo.absoluteFilePath(), tempPath)) {
+		qCCritical(apngLogger) << "failed to create working copy of original file";
+		this->cacheFolder.rmdir(cacheDirName);
+		return QString();
+	}
+
+	//disassembler
+	QProcess process;
+	process.setProgram(this->disAsmPath);
+	process.setArguments({tempPath});
+	process.start(QIODevice::ReadOnly);
+	process.waitForFinished(-1);
+	if(process.exitStatus() != QProcess::NormalExit ||
+	   process.exitCode() != 0) {
+		qCCritical(apngLogger) << "Failed to dis-assembel file with error:" << process.errorString();
+		this->removeCacheDir(cacheDirName, true);
+		return QString();
+	}
+
+	//remove temp file
+	if(!QFile::remove(tempPath))
+		qCWarning(apngLogger) << "Failed to remove working copy";
+
+	//generate metadata
+	if(!this->createMetaData(this->cacheFolder.absoluteFilePath(cacheDirName))) {
+		this->removeCacheDir(cacheDirName, true);
+		return QString();
+	}
+
+	QSqlQuery addFileQuery(this->cacheDB);
+	addFileQuery.prepare(QStringLiteral("INSERT OR REPLACE INTO ApngCache "
+						 "(FileName, FileSize, ModificationDate, LastRequested, CacheFolder) "
+						 "VALUES(?, ?, ?, ?, ?)"));
+	addFileQuery.addBindValue(cacheFileInfo.absoluteFilePath());
+	addFileQuery.addBindValue(cacheFileInfo.size());
+	addFileQuery.addBindValue(cacheFileInfo.lastModified().toUTC());
+	addFileQuery.addBindValue(QDateTime::currentDateTimeUtc());
+	addFileQuery.addBindValue(cacheDirName);
+	if(!addFileQuery.exec()) {
+		QUERY_ERROR("Failed to add new caching info", addFileQuery);
+		this->removeCacheDir(cacheDirName, true);
+		return QString();
+	}
+
+	return cacheDirName;
+}
+
+bool CachedApngDisassembler::createMetaData(const QDir &cacheDir)
+{
+	static const QRegularExpression regex(QStringLiteral(R"__(delay=(\d+)\/(\d+))__"), QRegularExpression::OptimizeOnFirstUsageOption);
+
+	auto metaFile = cacheDir.absoluteFilePath(ApngImageHandler::metaFileName);
+	QSettings metaSettings(metaFile, QSettings::IniFormat);
+	metaSettings.beginWriteArray(ApngImageHandler::metaName);
+
+	auto entryList = cacheDir.entryInfoList({QStringLiteral("apngframe*.txt")}, QDir::Files, QDir::Name);
+	int arrayIndex = 0;
+	foreach(auto info, entryList) {
+		metaSettings.setArrayIndex(arrayIndex++);
+
+		QFile infoFile(info.absoluteFilePath());
+		if(!infoFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			qCCritical(apngLogger) << "Failed to read metadata file" << info.absoluteFilePath();
+			return false;
+		}
+		auto data = QString::fromUtf8(infoFile.readAll());
+		infoFile.close();
+		infoFile.remove();
+
+		auto match = regex.match(data);
+		if(!match.hasMatch()) {
+			qCCritical(apngLogger) << "Invalid metadata in file" << info.absoluteFilePath();
+			return false;
+		}
+
+		double delay = match.captured(1).toDouble() / match.captured(2).toDouble();
+		int msecDelay = qRound(delay * 1000);
+		metaSettings.setValue(ApngImageHandler::frameKey, info.completeBaseName());
+		metaSettings.setValue(ApngImageHandler::delayKey, msecDelay);
+	}
+
+	metaSettings.endArray();
+	return true;
 }
 
 void CachedApngDisassembler::startCleanup()
@@ -239,19 +290,6 @@ void CachedApngDisassembler::startCleanup()
 
 		//setp 1 -> remove cache folders not in the list;
 		QtConcurrent::run([=]() {
-			//TODO remove unused without the dange of removing wip cache folders
-//			foreach (auto dir, this->cacheFolder.entryList(QDir::AllDirs | QDir::NoDotAndDotDot)) {
-//				bool found = false;
-//				foreach (auto status, dbStatus) {
-//					if(dir == status.second) {
-//						found = true;
-//						break;
-//					}
-//				}
-//				if(!found)
-//					this->removeCacheDir(dir, false);
-//			}
-
 			//"accept" all dirs until limit is reached
 			quint64 maxSize = (quint64)this->cacheLimit * 1024*1024;
 			quint64 currentSize = 0;
