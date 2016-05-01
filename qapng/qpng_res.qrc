@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/binaries">
-        <file>apngdis.exe</file>
-    </qresource>
-</RCC>

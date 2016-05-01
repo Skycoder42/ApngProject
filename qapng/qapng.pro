@@ -13,12 +13,10 @@ CONFIG += plugin
 DESTDIR = $$[QT_INSTALL_PLUGINS]/imageformats
 
 SOURCES += apngimageplugin.cpp \
-    apngimagehandler.cpp \
-    cachedapngdisassembler.cpp
+    apngimagehandler.cpp
 
 HEADERS += apngimageplugin.h \
-    apngimagehandler.h \
-    cachedapngdisassembler.h
+    apngimagehandler.h
 DISTFILES += qapng.json
 
 unix {
@@ -26,5 +24,4 @@ unix {
     INSTALLS += target
 }
 
-RESOURCES += \
-    qpng_res.qrc
+RESOURCES +=
