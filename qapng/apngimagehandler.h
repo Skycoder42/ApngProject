@@ -3,22 +3,14 @@
 
 #include <QImageIOHandler>
 #include <QVariant>
-#include <QRect>
-#include <QSettings>
-#include <QDir>
 #include <QImage>
-#include <QCache>
+#include <QPair>
+#include <QVector>
 
 class ApngImageHandler : public QImageIOHandler
 {
 public:
-	static const QString metaFileName;
-	static const QString metaName;
-	static const QString frameKey;
-	static const QString delayKey;
-
-	ApngImageHandler(const QString &cacheDir);
-	~ApngImageHandler();
+	ApngImageHandler();
 
 	// QImageIOHandler interface
 	QByteArray name() const Q_DECL_FINAL;
@@ -34,12 +26,13 @@ public:
 	int currentImageNumber() const Q_DECL_FINAL;
 
 private:
-	const QDir cacheDir;
-	QSettings metaSettings;
-	const int frameCount;
+	typedef QPair<QImage, int> ImageInfo;
+	int currentIndex;
+	QVector<ImageInfo> imageCache;
+	bool readState;
 
-	int currentArrayIndex;
-	QHash<int, QImage> imageCache;
+	QVector<ImageInfo> &getData();
+	bool readImageData();
 };
 
 #endif // APNGIMAGEHANDLER_H

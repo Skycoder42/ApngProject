@@ -23,3 +23,6 @@ DISTFILES += \
     testData/apngSample.apng \
     testData/pngSample.png \
     testData/ppngSample.png
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libapng/release/ -lapng64
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libapng/debug/ -lapng64
