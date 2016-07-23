@@ -232,7 +232,7 @@ void ConversionProgressDialog::lastFinished()
 							 .arg(errorFiles.join(QLatin1Char('\n')));
 		}
 
-		DialogMaster::msgBox(config);
+		DialogMaster::messageBox(config);
 		//TODO openAll
 	}
 }

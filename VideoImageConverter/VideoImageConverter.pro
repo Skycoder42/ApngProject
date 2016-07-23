@@ -65,7 +65,7 @@ RESOURCES += \
 	videoimageconverter_res.qrc
 
 # make targets
-cpapngasm.path = $$OUT_PWD/debug
-#cpapngasm.path = $$OUT_PWD/release
+win32:CONFIG(release, debug|release): cpapngasm.path = $$OUT_PWD/release
+else:win32:CONFIG(debug, debug|release): cpapngasm.path = $$OUT_PWD/debug
 cpapngasm.files += $$PWD/apngasm.exe
 INSTALLS += cpapngasm

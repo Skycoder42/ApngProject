@@ -6,7 +6,7 @@
 
 QT       += core gui sql concurrent
 
-TARGET = qapng
+TARGET = $$qtLibraryTarget(qapng)
 TEMPLATE = lib
 CONFIG += plugin
 
