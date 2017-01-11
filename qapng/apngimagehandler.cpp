@@ -1,7 +1,13 @@
 #include "apngimagehandler.h"
 #include <QFileDevice>
-#include <io.h>
 #include <loadapng.h>
+#ifdef Q_OS_WIN
+#include <io.h>
+#define dup _dup
+#else
+#include <QDebug>
+#include <unistd.h>
+#endif
 
 void apngCleanupHandler(void *info);
 
@@ -28,6 +34,8 @@ bool ApngImageHandler::canRead() const
 bool ApngImageHandler::read(QImage *image)
 {
 	auto data = this->getData();
+	if(data.isEmpty())
+		return false;
 	*image = data[this->currentIndex].first;
 	if(++this->currentIndex >= data.size())
 		this->currentIndex = 0;
@@ -86,7 +94,10 @@ int ApngImageHandler::imageCount() const
 
 int ApngImageHandler::nextImageDelay() const
 {
-	return this->imageCache[this->currentIndex].second;
+	if(this->imageCache.isEmpty())
+		return 0;//TODO
+	else
+		return this->imageCache[this->currentIndex].second;
 }
 
 int ApngImageHandler::currentImageNumber() const
@@ -107,7 +118,7 @@ bool ApngImageHandler::readImageData()
 {
 	auto device = dynamic_cast<QFileDevice*>(this->device());
 	auto handle = device->handle();
-	auto fHandle = fdopen(_dup(handle), "rb");
+	auto fHandle = fdopen(dup(handle), "rb");//TODO here
 	if(fHandle != 0) {
 		std::vector<APNGFrame> frames;
 		auto res = load_apng(fHandle, frames);

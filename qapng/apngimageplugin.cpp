@@ -16,7 +16,7 @@ QImageIOPlugin::Capabilities ApngImagePlugin::capabilities(QIODevice *device, co
 												   0x1A,
 												   0x0A};
 			QByteArray data = device->peek(8);
-			return data == QByteArray((char*)header, 8) ? CanRead : 0;
+			return data == QByteArray((char*)header, 8) ? CanRead : (Capability)0;
 		} else
 			return CanRead;
 	} else

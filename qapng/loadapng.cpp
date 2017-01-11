@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <png.h>     /* original (unpatched) libpng is ok */
-#include <QtZlib/zlib.h>
+#include <zlib.h>
 #include <QImage>
 #include "loadapng.h"
 
@@ -70,33 +70,33 @@ void compose_frame(unsigned char ** rows_dst, unsigned char ** rows_src, unsigne
 
   for (j=0; j<h; j++)
   {
-    unsigned char * sp = rows_src[j];
-    unsigned char * dp = rows_dst[j+y] + x*4;
+	unsigned char * sp = rows_src[j];
+	unsigned char * dp = rows_dst[j+y] + x*4;
 
-    if (bop == 0)
-      memcpy(dp, sp, w*4);
-    else
-    for (i=0; i<w; i++, sp+=4, dp+=4)
-    {
-      if (sp[3] == 255)
-        memcpy(dp, sp, 4);
-      else
-      if (sp[3] != 0)
-      {
-        if (dp[3] != 0)
-        {
-          u = sp[3]*255;
-          v = (255-sp[3])*dp[3];
-          al = u + v;
-          dp[0] = (sp[0]*u + dp[0]*v)/al;
-          dp[1] = (sp[1]*u + dp[1]*v)/al;
-          dp[2] = (sp[2]*u + dp[2]*v)/al;
-          dp[3] = al/255;
-        }
-        else
-          memcpy(dp, sp, 4);
-      }
-    }
+	if (bop == 0)
+	  memcpy(dp, sp, w*4);
+	else
+	for (i=0; i<w; i++, sp+=4, dp+=4)
+	{
+	  if (sp[3] == 255)
+		memcpy(dp, sp, 4);
+	  else
+	  if (sp[3] != 0)
+	  {
+		if (dp[3] != 0)
+		{
+		  u = sp[3]*255;
+		  v = (255-sp[3])*dp[3];
+		  al = u + v;
+		  dp[0] = (sp[0]*u + dp[0]*v)/al;
+		  dp[1] = (sp[1]*u + dp[1]*v)/al;
+		  dp[2] = (sp[2]*u + dp[2]*v)/al;
+		  dp[3] = al/255;
+		}
+		else
+		  memcpy(dp, sp, 4);
+	  }
+	}
   }
 }
 
@@ -105,11 +105,11 @@ unsigned int read_chunk(FILE * f, CHUNK * pChunk)
   unsigned char len[4];
   if (fread(&len, 4, 1, f) == 1)
   {
-    pChunk->size = png_get_uint_32(len) + 12;
-    pChunk->p = new unsigned char[pChunk->size];
-    memcpy(pChunk->p, len, 4);
-    if (fread(pChunk->p + 4, pChunk->size - 4, 1, f) == 1)
-      return *(unsigned int *)(pChunk->p + 4);
+	pChunk->size = png_get_uint_32(len) + 12;
+	pChunk->p = new unsigned char[pChunk->size];
+	memcpy(pChunk->p, len, 4);
+	if (fread(pChunk->p + 4, pChunk->size - 4, 1, f) == 1)
+	  return *(unsigned int *)(pChunk->p + 4);
   }
   return 0;
 }
@@ -121,34 +121,34 @@ void processing_start(png_structp & png_ptr, png_infop & info_ptr, void * frame_
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   info_ptr = png_create_info_struct(png_ptr);
   if (!png_ptr || !info_ptr)
-    return;
+	return;
 
   if (setjmp(png_jmpbuf(png_ptr)))
   {
-    png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-    return;
+	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+	return;
   }
 
   png_set_crc_action(png_ptr, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
   png_set_progressive_read_fn(png_ptr, frame_ptr, info_fn, row_fn, NULL);
-          
+
   png_process_data(png_ptr, info_ptr, header, 8);
   png_process_data(png_ptr, info_ptr, chunkIHDR.p, chunkIHDR.size);
 
   if (hasInfo)
-    for (unsigned int i=0; i<chunksInfo.size(); i++)
-      png_process_data(png_ptr, info_ptr, chunksInfo[i].p, chunksInfo[i].size);
+	for (unsigned int i=0; i<chunksInfo.size(); i++)
+	  png_process_data(png_ptr, info_ptr, chunksInfo[i].p, chunksInfo[i].size);
 }
 
 void processing_data(png_structp png_ptr, png_infop info_ptr, unsigned char * p, unsigned int size)
 {
   if (!png_ptr || !info_ptr)
-    return;
+	return;
 
   if (setjmp(png_jmpbuf(png_ptr)))
   {
-    png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-    return;
+	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+	return;
   }
 
   png_process_data(png_ptr, info_ptr, p, size);
@@ -159,12 +159,12 @@ int processing_finish(png_structp png_ptr, png_infop info_ptr)
   unsigned char footer[12] = {0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130};
 
   if (!png_ptr || !info_ptr)
-    return 1;
+	return 1;
 
   if (setjmp(png_jmpbuf(png_ptr)))
   {
-    png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-    return 1;
+	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+	return 1;
   }
 
   png_process_data(png_ptr, info_ptr, footer, 12);
@@ -194,33 +194,33 @@ int load_apng(FILE *file, std::vector<APNGFrame>& frames)
   if (file != 0)
   {
 	if (fread(sig, 1, 8, file) == 8 && png_sig_cmp(sig, 0, 8) == 0)
-    {
+	{
 	  id = read_chunk(file, &chunkIHDR);
 
-      if (id == id_IHDR && chunkIHDR.size == 25)
-      {
-        w0 = w = png_get_uint_32(chunkIHDR.p + 8);
-        h0 = h = png_get_uint_32(chunkIHDR.p + 12);
-        x0 = 0;
-        y0 = 0;
-        delay_num = 1;
-        delay_den = 10;
-        dop = 0;
-        bop = 0;
-        rowbytes = w * 4;
-        imagesize = h * rowbytes;
+	  if (id == id_IHDR && chunkIHDR.size == 25)
+	  {
+		w0 = w = png_get_uint_32(chunkIHDR.p + 8);
+		h0 = h = png_get_uint_32(chunkIHDR.p + 12);
+		x0 = 0;
+		y0 = 0;
+		delay_num = 1;
+		delay_den = 10;
+		dop = 0;
+		bop = 0;
+		rowbytes = w * 4;
+		imagesize = h * rowbytes;
 
-        frameRaw.p = new unsigned char[imagesize];
-        frameRaw.rows = new png_bytep[h * sizeof(png_bytep)];
-        for (j=0; j<h; j++)
-          frameRaw.rows[j] = frameRaw.p + j * rowbytes;
+		frameRaw.p = new unsigned char[imagesize];
+		frameRaw.rows = new png_bytep[h * sizeof(png_bytep)];
+		for (j=0; j<h; j++)
+		  frameRaw.rows[j] = frameRaw.p + j * rowbytes;
 
-        frameCur.w = w;
-        frameCur.h = h;
-        frameCur.p = new unsigned char[imagesize];
-        frameCur.rows = new png_bytep[h * sizeof(png_bytep)];
-        for (j=0; j<h; j++)
-          frameCur.rows[j] = frameCur.p + j * rowbytes;
+		frameCur.w = w;
+		frameCur.h = h;
+		frameCur.p = new unsigned char[imagesize];
+		frameCur.rows = new png_bytep[h * sizeof(png_bytep)];
+		for (j=0; j<h; j++)
+		  frameCur.rows[j] = frameCur.p + j * rowbytes;
 
 		processing_start(png_ptr, info_ptr, (void *)&frameRaw, hasInfo, chunkIHDR, chunksInfo);
 
@@ -343,20 +343,20 @@ int load_apng(FILE *file, std::vector<APNGFrame>& frames)
 			continue;
 		  }
 		  delete[] chunk.p;
-        }
-        delete[] frameRaw.rows;
-        delete[] frameRaw.p;
+		}
+		delete[] frameRaw.rows;
+		delete[] frameRaw.p;
 
-        if (!frames.empty())
-          res = (skipFirst) ? 0 : 1;
-      }
+		if (!frames.empty())
+		  res = (skipFirst) ? 0 : 1;
+	  }
 	}
 
-    for (i=0; i<chunksInfo.size(); i++)
-      delete[] chunksInfo[i].p;
+	for (i=0; i<chunksInfo.size(); i++)
+	  delete[] chunksInfo[i].p;
 
-    chunksInfo.clear();
-    delete[] chunkIHDR.p;
+	chunksInfo.clear();
+	delete[] chunkIHDR.p;
   }
 
   return res;
