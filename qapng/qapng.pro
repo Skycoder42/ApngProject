@@ -23,7 +23,7 @@ DISTFILES += qapng.json
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libapng/release/ -lapng64
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libapng/debug/ -lapng64
-else: -lpng
+else: LIBS += -lpng
 
-INCLUDEPATH += $$PWD/../libapng/include
-DEPENDPATH += $$PWD/../libapng/include
+win32:INCLUDEPATH += $$PWD/../libapng/include
+win32:DEPENDPATH += $$PWD/../libapng/include

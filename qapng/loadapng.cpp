@@ -29,11 +29,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  *
  */
-#include <stdlib.h>
-#include <stdio.h>
 #include <png.h>     /* original (unpatched) libpng is ok */
 #include <zlib.h>
-#include <QImage>
 #include "loadapng.h"
 
 #define notabc(c) ((c) < 65 || (c) > 122 || ((c) > 90 && (c) < 97))
@@ -100,15 +97,15 @@ void compose_frame(unsigned char ** rows_dst, unsigned char ** rows_src, unsigne
   }
 }
 
-unsigned int read_chunk(FILE * f, CHUNK * pChunk)
+unsigned int read_chunk(QIODevice * device, CHUNK * pChunk)
 {
-  unsigned char len[4];
-  if (fread(&len, 4, 1, f) == 1)
+  unsigned char len[4] = {0};
+  if (device->read((char*)len, 4))
   {
 	pChunk->size = png_get_uint_32(len) + 12;
 	pChunk->p = new unsigned char[pChunk->size];
 	memcpy(pChunk->p, len, 4);
-	if (fread(pChunk->p + 4, pChunk->size - 4, 1, f) == 1)
+	if (device->read((char*)pChunk->p + 4, pChunk->size - 4))
 	  return *(unsigned int *)(pChunk->p + 4);
   }
   return 0;
@@ -173,15 +170,15 @@ int processing_finish(png_structp png_ptr, png_infop info_ptr)
   return 0;
 }
 
-int load_apng(FILE *file, std::vector<APNGFrame>& frames)
+int load_apng(QIODevice *device, std::vector<APNGFrame>& frames)
 {
   unsigned int id, i, j, w, h, w0, h0, x0, y0;
   unsigned int delay_num, delay_den, dop, bop, rowbytes, imagesize;
   unsigned char sig[8];
   png_structp png_ptr;
   png_infop info_ptr;
-  CHUNK chunk;
-  CHUNK chunkIHDR;
+  CHUNK chunk = {0};
+  CHUNK chunkIHDR = {0};
   std::vector<CHUNK> chunksInfo;
   bool isAnimated = false;
   bool skipFirst = false;
@@ -191,11 +188,11 @@ int load_apng(FILE *file, std::vector<APNGFrame>& frames)
   APNGFrame frameNext = {0};
   int res = -1;
 
-  if (file != 0)
+  if (device != 0)
   {
-	if (fread(sig, 1, 8, file) == 8 && png_sig_cmp(sig, 0, 8) == 0)
+	if (device->read((char*)sig, 8) == 8 && png_sig_cmp(sig, 0, 8) == 0)
 	{
-	  id = read_chunk(file, &chunkIHDR);
+	  id = read_chunk(device, &chunkIHDR);
 
 	  if (id == id_IHDR && chunkIHDR.size == 25)
 	  {
@@ -224,9 +221,9 @@ int load_apng(FILE *file, std::vector<APNGFrame>& frames)
 
 		processing_start(png_ptr, info_ptr, (void *)&frameRaw, hasInfo, chunkIHDR, chunksInfo);
 
-		while ( !feof(file) )
+		while ( !device->atEnd() )
 		{
-		  id = read_chunk(file, &chunk);
+		  id = read_chunk(device, &chunk);
 
 		  if (id == id_acTL && !hasInfo && !isAnimated)
 		  {

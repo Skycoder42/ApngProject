@@ -116,13 +116,12 @@ QVector<ApngImageHandler::ImageInfo> &ApngImageHandler::getData()
 
 bool ApngImageHandler::readImageData()
 {
-	auto device = dynamic_cast<QFileDevice*>(this->device());
-	auto handle = device->handle();
-	auto fHandle = fdopen(dup(handle), "rb");//TODO here
-	if(fHandle != 0) {
+	//auto device = dynamic_cast<QFileDevice*>(this->device());
+	//auto handle = device->handle();
+	//auto fHandle = fdopen(dup(handle), "rb");//TODO here
+	if(this->device() != 0) {
 		std::vector<APNGFrame> frames;
-		auto res = load_apng(fHandle, frames);
-		fclose(fHandle);
+		auto res = load_apng(this->device(), frames);
 
 		if(res >= 0) {
 			this->imageCache = QVector<ImageInfo>((int)frames.size());

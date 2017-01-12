@@ -13,19 +13,19 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        widget.cpp
+		widget.cpp
 
 HEADERS  += widget.h
 
 FORMS    += widget.ui
 
 DISTFILES += \
-    testData/apngSample.apng \
-    testData/pngSample.png \
-    testData/ppngSample.png
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libapng/release/ -lapng64
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libapng/debug/ -lapng64
+	testData/apngSample.apng \
+	testData/pngSample.png \
+	testData/ppngSample.png
 
 RESOURCES += \
-    plugin_test.qrc
+	plugin_test.qrc
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libapng/release/
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libapng/debug/
