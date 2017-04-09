@@ -20,46 +20,49 @@ win32 {
 	DEFINES += "DISPLAY_NAME=\"\\\"$$QMAKE_TARGET_PRODUCT\\\"\""
 
 	QT += winextras
+} else {
+	DEFINES += "COMPANY=\"\\\"Skycoder42\\\"\""
+	DEFINES += "DISPLAY_NAME=\"\\\"Video to APNG-Converter\\\"\""
 }
 
 include(../DialogMaster/dialogmaster.pri)
 include(../QPathEdit/qpathedit.pri)
 
 SOURCES += main.cpp \
-    videoloader.cpp \
-    videograbbersurface.cpp \
-    mainwindow.cpp \
-    convertfilemodel.cpp \
-    convertfileinfo.cpp \
-    conversionprogressdialog.cpp \
-    rammanager.cpp \
-    imagetransformator.cpp \
-    converterstream.cpp \
-    cachinggenerator.cpp \
-    advancedoptionsdialog.cpp \
-    apngassembler.cpp \
-    piedrawer.cpp
+	videoloader.cpp \
+	videograbbersurface.cpp \
+	mainwindow.cpp \
+	convertfilemodel.cpp \
+	convertfileinfo.cpp \
+	conversionprogressdialog.cpp \
+	rammanager.cpp \
+	imagetransformator.cpp \
+	converterstream.cpp \
+	cachinggenerator.cpp \
+	advancedoptionsdialog.cpp \
+	apngassembler.cpp \
+	piedrawer.cpp
 
 HEADERS += \
-    videoloader.h \
-    videograbbersurface.h \
-    imageinfo.h \
-    mainwindow.h \
-    convertfilemodel.h \
-    convertfileinfo.h \
-    conversionprogressdialog.h \
-    rammanager.h \
-    imagetransformator.h \
-    converterstream.h \
-    cachinggenerator.h \
-    advancedoptionsdialog.h \
-    apngassembler.h \
-    piedrawer.h
+	videoloader.h \
+	videograbbersurface.h \
+	imageinfo.h \
+	mainwindow.h \
+	convertfilemodel.h \
+	convertfileinfo.h \
+	conversionprogressdialog.h \
+	rammanager.h \
+	imagetransformator.h \
+	converterstream.h \
+	cachinggenerator.h \
+	advancedoptionsdialog.h \
+	apngassembler.h \
+	piedrawer.h
 
 FORMS += \
-    mainwindow.ui \
-    conversionprogressdialog.ui \
-    advancedoptionsdialog.ui
+	mainwindow.ui \
+	conversionprogressdialog.ui \
+	advancedoptionsdialog.ui
 
 RESOURCES += \
 	videoimageconverter_res.qrc

@@ -22,6 +22,6 @@ int RamManager::fetchMegaBytesUsage()
 		return -1;
 #else
 	Q_UNIMPLEMENTED();
-	return -1
+	return -1;
 #endif
 }
