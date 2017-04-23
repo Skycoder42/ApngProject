@@ -33,8 +33,12 @@ void ApngAssembler::handleNext()
 	QFileInfo fileInfo(info->filename());
 
 	this->currentProcess = new QProcess(this);
+#ifdef Q_OS_WIN
 	this->currentProcess->setProgram(QDir(QApplication::applicationDirPath())
 									 .absoluteFilePath(QStringLiteral("apngasm.exe")));
+#else
+	this->currentProcess->setProgram(QStringLiteral("apngasm"));
+#endif
 	QDir outDir;
 	if(this->setup.outDir.isEmpty())
 		outDir = fileInfo.dir();
@@ -43,17 +47,11 @@ void ApngAssembler::handleNext()
 	this->currentProcess->setWorkingDirectory(outDir.absolutePath());
 
 	QStringList arguments;
+	arguments.append(QStringLiteral("-o"));
 	arguments.append(outDir.absoluteFilePath(fileInfo.completeBaseName() + QStringLiteral(".apng")));
-	arguments.append(QDir(info->cacheDir()->path()).absoluteFilePath(QStringLiteral("frame00000000.png")));
+	arguments.append(QDir(info->cacheDir()->path()).absoluteFilePath(QStringLiteral("frame*.png")));
 	if(this->setup.loopCount > 0)
 		arguments.append(QStringLiteral("-l%1").arg(this->setup.loopCount));
-	if(this->setup.keepPalette)
-		arguments.append(QStringLiteral("-kp"));
-	if(this->setup.keepColorType)
-		arguments.append(QStringLiteral("-kc"));
-	arguments.append(QStringLiteral("-z%1").arg((int)this->setup.compression));
-	if(this->setup.compressionIterations > 0)
-		arguments.append(QStringLiteral("-i%1").arg(this->setup.loopCount, 2, 10, QLatin1Char('0')));
 	this->currentProcess->setArguments(arguments);
 
 	connect(this->currentProcess, &QProcess::errorOccurred,
@@ -104,7 +102,7 @@ void ApngAssembler::processError(QProcess::ProcessError error)
 		QMetaObject::invokeMethod(this, "handleFinished", Qt::QueuedConnection);
 	}
 }
-
+#include <QDebug>
 void ApngAssembler::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
 	if(this->currentProcess) {
@@ -112,6 +110,8 @@ void ApngAssembler::processFinished(int exitCode, QProcess::ExitStatus exitStatu
 			if(!this->wasAborted()) {
 				auto info = this->current();
 				info->resetProgress();
+				qDebug() << currentProcess->readAllStandardOutput();
+				qDebug() << currentProcess->readAllStandardError();
 				if(exitCode == 0) {
 					info->setResultText(this->currentProcess->arguments().first());
 					info->updateStatus(ConvertFileInfo::Success);
