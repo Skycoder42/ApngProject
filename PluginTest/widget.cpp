@@ -1,12 +1,17 @@
 #include "widget.h"
 #include "ui_widget.h"
 #include <QMovie>
+#include <QDebug>
+#include <QBuffer>
 
 Widget::Widget(QWidget *parent) :
 	QWidget(parent),
 	ui(new Ui::Widget)
 {
 	ui->setupUi(this);
+
+	qDebug() << QImageReader::supportedImageFormats();
+	qDebug() << QMovie::supportedFormats();
 
 	//load images
 	this->ui->labelImagePng->setPixmap(QPixmap::fromImage(QImage(":/testData/pngSample.png")));

@@ -9,7 +9,7 @@ class ApngImagePlugin : public QImageIOPlugin
 	Q_PLUGIN_METADATA(IID QImageIOHandlerFactoryInterface_iid FILE "qapng.json")
 
 public:
-	ApngImagePlugin(QObject *parent = 0);
+	ApngImagePlugin(QObject *parent = Q_NULLPTR);
 
 	// QImageIOPlugin interface
 	Capabilities capabilities(QIODevice *device, const QByteArray &format) const Q_DECL_FINAL;
