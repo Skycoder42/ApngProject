@@ -45,6 +45,14 @@ bool ApngImageHandler::read(QImage *image)
 QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
 {
 	switch(option) {
+	case QImageIOHandler::Size:
+	{
+		auto data = this->getData();
+		if(data.isEmpty())
+			return QSize();
+		else
+			return data.first().first.size();
+	}
 	case QImageIOHandler::IncrementalReading:
 	case QImageIOHandler::Animation:
 		return true;
@@ -56,6 +64,7 @@ QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
 bool ApngImageHandler::supportsOption(QImageIOHandler::ImageOption option) const
 {
 	switch(option) {
+	case QImageIOHandler::Size:
 	case QImageIOHandler::IncrementalReading:
 	case QImageIOHandler::Animation:
 		return true;
@@ -94,10 +103,11 @@ int ApngImageHandler::imageCount() const
 
 int ApngImageHandler::nextImageDelay() const
 {
-	if(this->imageCache.isEmpty())
+	auto data = this->getData();
+	if(data.isEmpty())
 		return 0;//TODO
 	else
-		return this->imageCache[this->currentIndex].second;
+		return data[this->currentIndex].second;
 }
 
 int ApngImageHandler::currentImageNumber() const
@@ -105,7 +115,7 @@ int ApngImageHandler::currentImageNumber() const
 	return this->currentIndex;
 }
 
-QVector<ApngImageHandler::ImageInfo> &ApngImageHandler::getData()
+QVector<ApngImageHandler::ImageInfo> &ApngImageHandler::getData() const
 {
 	if(!this->readState) {
 		this->readImageData();
@@ -114,11 +124,8 @@ QVector<ApngImageHandler::ImageInfo> &ApngImageHandler::getData()
 	return this->imageCache;
 }
 
-bool ApngImageHandler::readImageData()
+bool ApngImageHandler::readImageData() const
 {
-	//auto device = dynamic_cast<QFileDevice*>(this->device());
-	//auto handle = device->handle();
-	//auto fHandle = fdopen(dup(handle), "rb");//TODO here
 	if(this->device() != 0) {
 		std::vector<APNGFrame> frames;
 		auto res = load_apng(this->device(), frames);

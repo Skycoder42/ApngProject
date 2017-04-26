@@ -28,11 +28,11 @@ public:
 private:
 	typedef QPair<QImage, int> ImageInfo;
 	int currentIndex;
-	QVector<ImageInfo> imageCache;
-	bool readState;
+	mutable QVector<ImageInfo> imageCache;
+	mutable bool readState;
 
-	QVector<ImageInfo> &getData();
-	bool readImageData();
+	QVector<ImageInfo> &getData() const;
+	bool readImageData() const;
 };
 
 #endif // APNGIMAGEHANDLER_H
