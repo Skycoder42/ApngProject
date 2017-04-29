@@ -3,8 +3,7 @@
 
 ApngImagePlugin::ApngImagePlugin(QObject *parent) :
 	QImageIOPlugin(parent)
-{
-}
+{}
 
 QImageIOPlugin::Capabilities ApngImagePlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
@@ -28,11 +27,12 @@ QImageIOPlugin::Capabilities ApngImagePlugin::capabilities(QIODevice *device, co
 
 QImageIOHandler *ApngImagePlugin::create(QIODevice *device, const QByteArray &format) const
 {
-	if(device && this->capabilities(device, format).testFlag(CanRead)) {
+	if(device && capabilities(device, format).testFlag(CanRead)) {
 		auto handler = new ApngImageHandler();
 		handler->setDevice(device);
 		handler->setFormat(format);
+		handler->loadImage();
 		return handler;
 	} else
-		return Q_NULLPTR;
+		return nullptr;
 }

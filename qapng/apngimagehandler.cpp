@@ -13,9 +13,8 @@ void apngCleanupHandler(void *info);
 
 ApngImageHandler::ApngImageHandler() :
 	QImageIOHandler(),
-	currentIndex(0),
-	imageCache(),
-	readState(false)
+	_index(0),
+	_data()
 {}
 
 QByteArray ApngImageHandler::name() const
@@ -25,20 +24,16 @@ QByteArray ApngImageHandler::name() const
 
 bool ApngImageHandler::canRead() const
 {
-	if(this->readState)
-		return !this->imageCache.isEmpty();
-	else
-		return this->device();
+	return !_data.isEmpty();
 }
 
 bool ApngImageHandler::read(QImage *image)
 {
-	auto data = this->getData();
-	if(data.isEmpty())
+	if(_data.isEmpty())
 		return false;
-	*image = data[this->currentIndex].first;
-	if(++this->currentIndex >= data.size())
-		this->currentIndex = 0;
+	*image = _data[_index].first;
+	if(++_index >= _data.size())
+		_index = 0;
 	return !image->isNull();
 }
 
@@ -47,11 +42,10 @@ QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
 	switch(option) {
 	case QImageIOHandler::Size:
 	{
-		auto data = this->getData();
-		if(data.isEmpty())
+		if(_data.isEmpty())
 			return QSize();
 		else
-			return data.first().first.size();
+			return _data[_index].first.size();
 	}
 	case QImageIOHandler::IncrementalReading:
 	case QImageIOHandler::Animation:
@@ -75,8 +69,8 @@ bool ApngImageHandler::supportsOption(QImageIOHandler::ImageOption option) const
 
 bool ApngImageHandler::jumpToNextImage()
 {
-	if(this->currentIndex < this->getData().size() - 1) {
-		++this->currentIndex;
+	if(_index < _data.size() - 1) {
+		++_index;
 		return true;
 	} else
 		return false;
@@ -84,8 +78,8 @@ bool ApngImageHandler::jumpToNextImage()
 
 bool ApngImageHandler::jumpToImage(int imageNumber)
 {
-	if(imageNumber < this->getData().size() - 1) {
-		this->currentIndex = imageNumber;
+	if(imageNumber < _data.size() - 1) {
+		_index = imageNumber;
 		return true;
 	} else
 		return false;
@@ -98,50 +92,37 @@ int ApngImageHandler::loopCount() const
 
 int ApngImageHandler::imageCount() const
 {
-	return this->imageCache.size();
+	return _data.size();
 }
 
 int ApngImageHandler::nextImageDelay() const
 {
-	auto data = this->getData();
-	if(data.isEmpty())
-		return 0;//TODO
+	if(_data.isEmpty())
+		return 0;
 	else
-		return data[this->currentIndex].second;
+		return _data[_index].second;
 }
 
 int ApngImageHandler::currentImageNumber() const
 {
-	return this->currentIndex;
+	return _index;
 }
 
-QVector<ApngImageHandler::ImageInfo> &ApngImageHandler::getData() const
+void ApngImageHandler::loadImage()
 {
-	if(!this->readState) {
-		this->readImageData();
-		this->readState = true;
-	}
-	return this->imageCache;
-}
-
-bool ApngImageHandler::readImageData() const
-{
-	if(this->device() != 0) {
+	if(device() != nullptr) {
 		std::vector<APNGFrame> frames;
-		auto res = load_apng(this->device(), frames);
+		auto res = load_apng(device(), frames);
 
 		if(res >= 0) {
-			this->imageCache = QVector<ImageInfo>((int)frames.size());
-			for(int i = 0, max = frames.size(); i < max; ++i) {
+			_data = QVector<ImageInfo>((int)frames.size());
+			for(auto i = 0, max = _data.size(); i < max; ++i) {
 				APNGFrame &frame = frames[i];
 				QImage image(frame.p, frame.w, frame.h, QImage::Format_RGBA8888, apngCleanupHandler, new APNGFrame(frame));
-				this->imageCache[i] = {image, qRound(((double)frame.delay_num / (double)frame.delay_den) * 1000.0)};
+				_data[i] = {image, qRound(((double)frame.delay_num / (double)frame.delay_den) * 1000.0)};
 			}
-			return true;
 		}
 	}
-
-	return false;
 }
 
 void apngCleanupHandler(void *info)

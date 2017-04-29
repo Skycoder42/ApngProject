@@ -13,26 +13,24 @@ public:
 	ApngImageHandler();
 
 	// QImageIOHandler interface
-	QByteArray name() const Q_DECL_FINAL;
-	bool canRead() const Q_DECL_FINAL;
-	bool read(QImage *image) Q_DECL_FINAL;
-	QVariant option(ImageOption option) const Q_DECL_FINAL;
-	bool supportsOption(ImageOption option) const Q_DECL_FINAL;
-	bool jumpToNextImage() Q_DECL_FINAL;
-	bool jumpToImage(int imageNumber) Q_DECL_FINAL;
-	int loopCount() const Q_DECL_FINAL;
-	int imageCount() const Q_DECL_FINAL;
-	int nextImageDelay() const Q_DECL_FINAL;
-	int currentImageNumber() const Q_DECL_FINAL;
+	QByteArray name() const final;
+	bool canRead() const final;
+	bool read(QImage *image) final;
+	QVariant option(ImageOption option) const final;
+	bool supportsOption(ImageOption option) const final;
+	bool jumpToNextImage() final;
+	bool jumpToImage(int imageNumber) final;
+	int loopCount() const final;
+	int imageCount() const final;
+	int nextImageDelay() const final;
+	int currentImageNumber() const final;
+
+	void loadImage();
 
 private:
 	typedef QPair<QImage, int> ImageInfo;
-	int currentIndex;
-	mutable QVector<ImageInfo> imageCache;
-	mutable bool readState;
-
-	QVector<ImageInfo> &getData() const;
-	bool readImageData() const;
+	int _index;
+	QVector<ImageInfo> _data;
 };
 
 #endif // APNGIMAGEHANDLER_H
