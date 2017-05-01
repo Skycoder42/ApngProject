@@ -1,8 +1,7 @@
-QT += core gui multimedia widgets concurrent
-
-CONFIG += c++14
-
 TEMPLATE = app
+
+QT += core gui multimedia widgets concurrent
+CONFIG += c++14
 
 TARGET = VideoImageConverter
 VERSION = 2.0.0
@@ -27,23 +26,8 @@ win32 {
 
 LIBS += -lapngasm
 
-include(../DialogMaster/dialogmaster.pri)
 include(../QPathEdit/qpathedit.pri)
-
-SOURCES += main.cpp \
-	videoloader.cpp \
-	videograbbersurface.cpp \
-	mainwindow.cpp \
-	convertfilemodel.cpp \
-	convertfileinfo.cpp \
-	conversionprogressdialog.cpp \
-	rammanager.cpp \
-	imagetransformator.cpp \
-	converterstream.cpp \
-	cachinggenerator.cpp \
-	advancedoptionsdialog.cpp \
-	apngassembler.cpp \
-	piedrawer.cpp
+include(vendor/vendor.pri)
 
 HEADERS += \
 	videoloader.h \
@@ -60,6 +44,21 @@ HEADERS += \
 	advancedoptionsdialog.h \
 	apngassembler.h \
 	piedrawer.h
+
+SOURCES += main.cpp \
+	videoloader.cpp \
+	videograbbersurface.cpp \
+	mainwindow.cpp \
+	convertfilemodel.cpp \
+	convertfileinfo.cpp \
+	conversionprogressdialog.cpp \
+	rammanager.cpp \
+	imagetransformator.cpp \
+	converterstream.cpp \
+	cachinggenerator.cpp \
+	advancedoptionsdialog.cpp \
+	apngassembler.cpp \
+	piedrawer.cpp
 
 FORMS += \
 	mainwindow.ui \
