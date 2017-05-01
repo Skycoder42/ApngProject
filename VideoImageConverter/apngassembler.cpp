@@ -1,5 +1,6 @@
 #include "apngassembler.h"
 #include <QApplication>
+#include "apngasm.h"
 
 template<typename... Args> struct SELECT {
 	template<typename C, typename R>

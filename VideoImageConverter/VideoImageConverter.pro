@@ -5,7 +5,7 @@ CONFIG += c++14
 TEMPLATE = app
 
 TARGET = VideoImageConverter
-VERSION = 1.0.0
+VERSION = 2.0.0
 
 DEFINES += "TARGET=\\\"$$TARGET\\\""
 DEFINES += "VERSION=\\\"$$VERSION\\\""
@@ -24,6 +24,8 @@ win32 {
 	DEFINES += "COMPANY=\"\\\"Skycoder42\\\"\""
 	DEFINES += "DISPLAY_NAME=\"\\\"Video to APNG-Converter\\\"\""
 }
+
+LIBS += -lapngasm
 
 include(../DialogMaster/dialogmaster.pri)
 include(../QPathEdit/qpathedit.pri)
@@ -66,9 +68,3 @@ FORMS += \
 
 RESOURCES += \
 	videoimageconverter_res.qrc
-
-# make targets
-win32:CONFIG(release, debug|release): cpapngasm.path = $$OUT_PWD/release
-else:win32:CONFIG(debug, debug|release): cpapngasm.path = $$OUT_PWD/debug
-cpapngasm.files += $$PWD/apngasm.exe
-INSTALLS += cpapngasm

@@ -1,7 +1,11 @@
 #include "rammanager.h"
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
 #include "qt_windows.h"
 #include "psapi.h"
+#elif defined(Q_OS_UNIX)
+#include <sys/resource.h>
+#include <errno.h>
+#include <QDebug>
 #endif
 
 bool RamManager::ramUsageOk()
@@ -11,7 +15,7 @@ bool RamManager::ramUsageOk()
 
 int RamManager::fetchMegaBytesUsage()
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	if(GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))){
 		auto size = pmc.PrivateUsage; //byte
@@ -20,6 +24,14 @@ int RamManager::fetchMegaBytesUsage()
 		return size;
 	} else
 		return -1;
+#elif defined(Q_OS_UNIX)
+	rusage use;
+	if(getrusage(RUSAGE_SELF, &use) == 0)
+		return use.ru_maxrss / 10024;
+	else {
+		qWarning() << "Failed with error code:" << errno;
+		return -1;
+	}
 #else
 	Q_UNIMPLEMENTED();
 	return -1;
