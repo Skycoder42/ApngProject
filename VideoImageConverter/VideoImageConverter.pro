@@ -26,7 +26,6 @@ win32 {
 
 LIBS += -lapngasm
 
-include(../QPathEdit/qpathedit.pri)
 include(vendor/vendor.pri)
 
 HEADERS += \
