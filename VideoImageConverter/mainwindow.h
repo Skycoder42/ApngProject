@@ -33,7 +33,6 @@ private slots:
 	void updateSliderTooltip(QSlider *slider, bool updatePositon = false, int position = 0);
 
 	void on_startConversionButton_clicked();
-	void on_advancedOptionsButton_clicked();
 
 private:
 	static QStringList supportedFormatsList;

@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent) :
 		break;
 	}
 	settings.endGroup();
+	ui->cacheDirectoryPathEdit->setPath(settings.value(QStringLiteral("cache")).toString());
 }
 
 MainWindow::~MainWindow()
@@ -248,29 +249,15 @@ void MainWindow::on_startConversionButton_clicked()
 																this->ui->frameRateDoubleSpinBox->value(),
 																speedMap[this->ui->targetSpeedRelativeSlider->value()]));
 		setup.append(new CachingGenerator::CachingSetup(AdvancedOptionsDialog::getValue(AdvancedOptionsDialog::CachingDirectory).toString()));
-		ApngAssembler::AssemblerSetup::CompressionType type;
-		if(this->ui->mode7zipButton->isChecked())
-			type = ApngAssembler::AssemblerSetup::Mode7zip;
-		else if(this->ui->modeZlibButton->isChecked())
-			type = ApngAssembler::AssemblerSetup::ModeZlib;
-		else if(this->ui->modeZopfliButton->isChecked())
-			type = ApngAssembler::AssemblerSetup::ModeZopfli;
-		else
-			type = ApngAssembler::AssemblerSetup::Mode7zip;
 		setup.append(new ApngAssembler::AssemblerSetup(this->ui->outputDirectoryCheckBox->isChecked() ?
 														   this->ui->outputDirectoryPathEdit->path() :
 														   QString(),
-													   this->ui->loopCountSpinBox->value(),
-													   this->ui->keepPaletteCheckBox->isChecked(),
-													   this->ui->keepColorTypeCheckBox->isChecked(),
-													   type,
-													   this->ui->compressionIterationsSpinBox->value()));
+													   -1,
+													   true,
+													   true,
+													   ApngAssembler::AssemblerSetup::Mode7zip,
+													   0));
 		emit startConversion(files, setup);
 		this->close();
 	}
-}
-
-void MainWindow::on_advancedOptionsButton_clicked()
-{
-	AdvancedOptionsDialog::showAdvancedSettings(this);
 }

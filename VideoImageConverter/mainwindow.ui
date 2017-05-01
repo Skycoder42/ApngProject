@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>413</height>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,12 +46,9 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QPushButton" name="advancedOptionsButton">
-           <property name="text">
-            <string>&amp;Advanced Options</string>
-           </property>
-           <property name="autoDefault">
-            <bool>false</bool>
+          <widget class="QToolButton" name="removeButton">
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonFollowStyle</enum>
            </property>
           </widget>
          </item>
@@ -69,12 +66,12 @@
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="removeButton"/>
-         </item>
-         <item>
           <widget class="QToolButton" name="addButton">
            <property name="popupMode">
             <enum>QToolButton::MenuButtonPopup</enum>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonFollowStyle</enum>
            </property>
           </widget>
          </item>
@@ -119,6 +116,9 @@
             </property>
             <property name="allowEmptyPath">
              <bool>false</bool>
+            </property>
+            <property name="placeholder">
+             <string>Directory of original file</string>
             </property>
            </widget>
           </item>
@@ -225,121 +225,31 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLabel" name="loopCountLabel">
+           <widget class="QLabel" name="cacheDirectoryLabel">
             <property name="text">
-             <string>&amp;Loop Count:</string>
+             <string>&amp;Cache-Directory:</string>
             </property>
             <property name="buddy">
-             <cstring>loopCountSpinBox</cstring>
+             <cstring>cacheDirectoryPathEdit</cstring>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QSpinBox" name="loopCountSpinBox">
-            <property name="buttonSymbols">
-             <enum>QAbstractSpinBox::PlusMinus</enum>
+           <widget class="QPathEdit" name="cacheDirectoryPathEdit">
+            <property name="style">
+             <enum>QPathEdit::JoinedButton</enum>
             </property>
-            <property name="specialValueText">
-             <string>Infinite</string>
+            <property name="pathMode">
+             <enum>QPathEdit::ExistingFolder</enum>
             </property>
-            <property name="accelerated">
+            <property name="dialogOptions">
+             <set>QFileDialog::ShowDirsOnly</set>
+            </property>
+            <property name="editable">
              <bool>true</bool>
             </property>
-            <property name="correctionMode">
-             <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-            </property>
-            <property name="showGroupSeparator" stdset="0">
-             <bool>true</bool>
-            </property>
-            <property name="maximum">
-             <number>2147483647</number>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="keepPaletteLabel">
-            <property name="text">
-             <string>Keep &amp;Palette:</string>
-            </property>
-            <property name="buddy">
-             <cstring>keepPaletteCheckBox</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="keepPaletteCheckBox"/>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="keepColorTypeLabel">
-            <property name="text">
-             <string>Keep &amp;Color Type:</string>
-            </property>
-            <property name="buddy">
-             <cstring>keepColorTypeCheckBox</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QCheckBox" name="keepColorTypeCheckBox"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="compressionTypeLabel">
-            <property name="text">
-             <string>Compression &amp;Type:</string>
-            </property>
-            <property name="buddy">
-             <cstring>mode7zipButton</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <widget class="QRadioButton" name="mode7zipButton">
-              <property name="text">
-               <string>7zip compression</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="modeZlibButton">
-              <property name="text">
-               <string>zlib compression</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="modeZopfliButton">
-              <property name="text">
-               <string>Zopfli compression</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="compressionIterationsLabel">
-            <property name="text">
-             <string>Compression &amp;Iterations:</string>
-            </property>
-            <property name="buddy">
-             <cstring>compressionIterationsSpinBox</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QSpinBox" name="compressionIterationsSpinBox">
-            <property name="specialValueText">
-             <string>Default</string>
-            </property>
-            <property name="accelerated">
-             <bool>true</bool>
-            </property>
-            <property name="showGroupSeparator" stdset="0">
-             <bool>true</bool>
+            <property name="placeholder">
+             <string>Use default cache directory</string>
             </property>
            </widget>
           </item>
@@ -434,23 +344,14 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>addButton</tabstop>
   <tabstop>fileListWidget</tabstop>
-  <tabstop>removeButton</tabstop>
+  <tabstop>addButton</tabstop>
   <tabstop>outputDirectoryCheckBox</tabstop>
   <tabstop>outputDirectoryPathEdit</tabstop>
   <tabstop>targetSizeSpinBox</tabstop>
   <tabstop>frameRateDoubleSpinBox</tabstop>
   <tabstop>targetSpeedRelativeSlider</tabstop>
-  <tabstop>loopCountSpinBox</tabstop>
-  <tabstop>keepPaletteCheckBox</tabstop>
-  <tabstop>keepColorTypeCheckBox</tabstop>
-  <tabstop>mode7zipButton</tabstop>
-  <tabstop>modeZlibButton</tabstop>
-  <tabstop>modeZopfliButton</tabstop>
-  <tabstop>compressionIterationsSpinBox</tabstop>
   <tabstop>startConversionButton</tabstop>
-  <tabstop>advancedOptionsButton</tabstop>
  </tabstops>
  <resources>
   <include location="videoimageconverter_res.qrc"/>
@@ -463,12 +364,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>447</x>
-     <y>49</y>
+     <x>407</x>
+     <y>66</y>
     </hint>
     <hint type="destinationlabel">
-     <x>679</x>
-     <y>52</y>
+     <x>651</x>
+     <y>68</y>
     </hint>
    </hints>
   </connection>
@@ -479,12 +380,12 @@
    <slot>setDefaultAction(QAction*)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>322</x>
-     <y>419</y>
+     <x>257</x>
+     <y>311</y>
     </hint>
     <hint type="destinationlabel">
-     <x>322</x>
-     <y>419</y>
+     <x>257</x>
+     <y>311</y>
     </hint>
    </hints>
   </connection>
