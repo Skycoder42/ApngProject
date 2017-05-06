@@ -2,7 +2,7 @@
 #include <videoloader.h>
 #include <QDebug>
 #include <QUrl>
-#include "mainwindow.h"
+#include "setupwindow.h"
 #include "conversionprogressdialog.h"
 
 int main(int argc, char *argv[])
@@ -19,10 +19,10 @@ int main(int argc, char *argv[])
 	qRegisterMetaType<ConvertFileInfo::Status>();
 	qRegisterMetaType<QMessageBox::Icon>();
 
-	MainWindow w;
+	SetupWindow w;
 	ConversionProgressDialog c;
-	QObject::connect(&w, &MainWindow::startConversion,
-					 &c, &ConversionProgressDialog::startConversion);
+	//QObject::connect(&w, &SetupWindow::startConversion,
+	//				 &c, &ConversionProgressDialog::startConversion);
 	w.show();
 
 	return a.exec();

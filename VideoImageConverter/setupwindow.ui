@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QDialog" name="MainWindow">
+ <class>SetupWindow</class>
+ <widget class="QDialog" name="SetupWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -79,7 +79,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget_2">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QGroupBox" name="optionsGroupBox">
@@ -286,7 +286,7 @@
   </layout>
   <action name="actionAdd_Files">
    <property name="icon">
-    <iconset resource="videoimageconverter_res.qrc">
+    <iconset theme="document-multiple" resource="videoimageconverter_res.qrc">
      <normaloff>:/icons/files.ico</normaloff>:/icons/files.ico</iconset>
    </property>
    <property name="text">
@@ -298,7 +298,7 @@
   </action>
   <action name="actionAdd_Folder">
    <property name="icon">
-    <iconset resource="videoimageconverter_res.qrc">
+    <iconset theme="folder" resource="videoimageconverter_res.qrc">
      <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
    </property>
    <property name="text">
@@ -310,7 +310,7 @@
   </action>
   <action name="actionAdd_Folder_Recursive">
    <property name="icon">
-    <iconset resource="videoimageconverter_res.qrc">
+    <iconset theme="view-list-tree" resource="videoimageconverter_res.qrc">
      <normaloff>:/icons/folder_rec.ico</normaloff>:/icons/folder_rec.ico</iconset>
    </property>
    <property name="text">
@@ -322,7 +322,7 @@
   </action>
   <action name="actionRemove_Selected_Files">
    <property name="icon">
-    <iconset resource="videoimageconverter_res.qrc">
+    <iconset theme="list-remove" resource="videoimageconverter_res.qrc">
      <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
    </property>
    <property name="text">

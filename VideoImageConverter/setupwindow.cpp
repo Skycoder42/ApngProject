@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "setupwindow.h"
+#include "ui_setupwindow.h"
 #include <QMenu>
 #include <QStandardPaths>
 #include <QDirIterator>
@@ -8,7 +8,6 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QtConcurrent>
-#include "advancedoptionsdialog.h"
 
 #include "convertfilemodel.h"
 #include "videoloader.h"
@@ -22,9 +21,9 @@
 	return action;\
 }()
 
-QStringList MainWindow::supportedFormatsList;
-QString MainWindow::supportedFormatsString;
-QHash<int, double> MainWindow::speedMap = {
+QStringList SetupWindow::supportedFormatsList;
+QString SetupWindow::supportedFormatsString;
+QHash<int, double> SetupWindow::speedMap = {
 	{-5, 1./32.},
 	{-4, 1./16.},
 	{-3, 1./8.},
@@ -38,33 +37,33 @@ QHash<int, double> MainWindow::speedMap = {
 	{5, 32.},
 };
 
-MainWindow::MainWindow(QWidget *parent) :
+SetupWindow::SetupWindow(QWidget *parent) :
 	QDialog(parent, Qt::Window |
-					Qt::WindowCloseButtonHint |
-					Qt::WindowMinMaxButtonsHint),
-	ui(new Ui::MainWindow),
+			Qt::WindowCloseButtonHint |
+			Qt::WindowMinMaxButtonsHint),
+	ui(new Ui::SetupWindow),
 	iconProvider(new QFileIconProvider())
 {
-	this->ui->setupUi(this);
-	this->updateSliderTooltip(this->ui->targetSpeedRelativeSlider, true);
+	ui->setupUi(this);
+	updateSliderTooltip(ui->targetSpeedRelativeSlider, true);
 
 	//toolbutton actions
-	this->ui->addButton->addActions({
-										this->ui->actionAdd_Files,
-										this->ui->actionAdd_Folder,
-										this->ui->actionAdd_Folder_Recursive
-									});
-	this->ui->addButton->setDefaultAction(this->ui->actionAdd_Files);
-	this->ui->removeButton->setDefaultAction(this->ui->actionRemove_Selected_Files);
+	ui->addButton->addActions({
+								  ui->actionAdd_Files,
+								  ui->actionAdd_Folder,
+								  ui->actionAdd_Folder_Recursive
+							  });
+	ui->addButton->setDefaultAction(ui->actionAdd_Files);
+	ui->removeButton->setDefaultAction(ui->actionRemove_Selected_Files);
 
 	//treeview actions
-	this->ui->fileListWidget->addActions({
-											 this->ui->actionAdd_Files,
-											 this->ui->actionAdd_Folder,
-											 this->ui->actionAdd_Folder_Recursive,
-											 SEPERATOR(this->ui->fileListWidget),
-											 this->ui->actionRemove_Selected_Files
-									   });
+	ui->fileListWidget->addActions({
+									   ui->actionAdd_Files,
+									   ui->actionAdd_Folder,
+									   ui->actionAdd_Folder_Recursive,
+									   SEPERATOR(ui->fileListWidget),
+									   ui->actionRemove_Selected_Files
+								   });
 
 	//formats
 	static bool once = true;
@@ -77,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
 			{ "MP4", "*.mp4", "*.m4v", "*.mp4v", "*.mpv4", "*.hdmov" },
 			{ "MOV", "*.mov" },
 			{ "3GP", "*.3gp", "*.3gpp", "*.3g2", "*.3gp2" },
-			{ "Matroska / WebM", "*.mkv", "*.webm" },
+			{ "Matroska/WebM", "*.mkv", "*.webm" },
 			{ "Ogg",  "*.ogm", "*.ogv" },
 			{ "Flash Video", "*.flv", "*.f4v" },
 			{ "Windows Media", "*.wmv" },
@@ -88,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 		foreach(auto lst, supportedFormats) {
 			auto str = lst.takeFirst();
-			supportedFormatsString.append(MainWindow::tr("%1 Files (%2);;")
+			supportedFormatsString.append(SetupWindow::tr("%1 Files (%2);;")
 										  .arg(str)
 										  .arg(lst.join(QLatin1Char(' '))));
 			supportedFormatsList.append(lst);
@@ -101,14 +100,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	//settings restore
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("setupWindow"));
-	this->restoreGeometry(settings.value(QStringLiteral("geom")).toByteArray());
-	this->ui->splitter->restoreState(settings.value(QStringLiteral("splitter")).toByteArray());
+	restoreGeometry(settings.value(QStringLiteral("geom")).toByteArray());
+	ui->splitter->restoreState(settings.value(QStringLiteral("splitter")).toByteArray());
 	switch(settings.value(QStringLiteral("defaultOpenAction")).toInt()) {
 	case 1:
-		this->ui->addButton->setDefaultAction(this->ui->actionAdd_Folder);
+		ui->addButton->setDefaultAction(ui->actionAdd_Folder);
 		break;
 	case 2:
-		this->ui->addButton->setDefaultAction(this->ui->actionAdd_Folder_Recursive);
+		ui->addButton->setDefaultAction(ui->actionAdd_Folder_Recursive);
 		break;
 	default:
 		break;
@@ -117,24 +116,25 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->cacheDirectoryPathEdit->setPath(settings.value(QStringLiteral("cache")).toString());
 }
 
-MainWindow::~MainWindow()
+SetupWindow::~SetupWindow()
 {
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("setupWindow"));
-	settings.setValue(QStringLiteral("geom"), this->saveGeometry());
-	settings.setValue(QStringLiteral("splitter"), this->ui->splitter->saveState());
-	if(this->ui->addButton->defaultAction() == this->ui->actionAdd_Files)
+	settings.setValue(QStringLiteral("geom"), saveGeometry());
+	settings.setValue(QStringLiteral("splitter"), ui->splitter->saveState());
+	if(ui->addButton->defaultAction() == ui->actionAdd_Files)
 		settings.setValue(QStringLiteral("defaultOpenAction"), 0);
-	else if(this->ui->addButton->defaultAction() == this->ui->actionAdd_Folder)
+	else if(ui->addButton->defaultAction() == ui->actionAdd_Folder)
 		settings.setValue(QStringLiteral("defaultOpenAction"), 1);
-	else if(this->ui->addButton->defaultAction() == this->ui->actionAdd_Folder_Recursive)
+	else if(ui->addButton->defaultAction() == ui->actionAdd_Folder_Recursive)
 		settings.setValue(QStringLiteral("defaultOpenAction"), 2);
 	settings.endGroup();
+	settings.setValue(QStringLiteral("cache"), ui->cacheDirectoryPathEdit->path());
 
-	delete this->ui;
+	delete ui;
 }
 
-void MainWindow::on_actionAdd_Files_triggered()
+void SetupWindow::on_actionAdd_Files_triggered()
 {
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("setupWindow"));
@@ -146,24 +146,21 @@ void MainWindow::on_actionAdd_Files_triggered()
 												&selectedFilter);
 	settings.setValue(QStringLiteral("defaultFilter"), selectedFilter);
 	settings.endGroup();
-	foreach (auto file, files) {
-		new QListWidgetItem(this->iconProvider->icon(file),
-							file,
-							this->ui->fileListWidget);
-	}
+	foreach (auto file, files)
+		addFileItem(file);
 }
 
-void MainWindow::on_actionAdd_Folder_triggered()
+void SetupWindow::on_actionAdd_Folder_triggered()
 {
-	this->getFolderFiles(false);
+	getFolderFiles(false);
 }
 
-void MainWindow::on_actionAdd_Folder_Recursive_triggered()
+void SetupWindow::on_actionAdd_Folder_Recursive_triggered()
 {
-	this->getFolderFiles(true);
+	getFolderFiles(true);
 }
 
-void MainWindow::getFolderFiles(bool recursive)
+void SetupWindow::getFolderFiles(bool recursive)
 {
 	auto folder = DialogMaster::getExistingDirectory(this,
 													 tr("Open video folder"),
@@ -192,14 +189,14 @@ void MainWindow::getFolderFiles(bool recursive)
 	}
 }
 
-void MainWindow::addFileItem(const QString &file)
+void SetupWindow::addFileItem(const QString &file)
 {
-	new QListWidgetItem(this->iconProvider->icon(file),
+	new QListWidgetItem(iconProvider->icon(file),
 						file,
-						this->ui->fileListWidget);
+						ui->fileListWidget);
 }
 
-void MainWindow::showFolderResult(int count)
+void SetupWindow::showFolderResult(int count)
 {
 	if(count == 0)
 		DialogMaster::warning(this, tr("No matiching files found!"));
@@ -207,22 +204,22 @@ void MainWindow::showFolderResult(int count)
 		DialogMaster::information(this, tr("Found %L1 files that could be video files!").arg(count));
 }
 
-void MainWindow::on_actionRemove_Selected_Files_triggered()
+void SetupWindow::on_actionRemove_Selected_Files_triggered()
 {
-	qDeleteAll(this->ui->fileListWidget->selectedItems());
+	qDeleteAll(ui->fileListWidget->selectedItems());
 }
 
-void MainWindow::on_targetSpeedRelativeSlider_sliderMoved(int position)
+void SetupWindow::on_targetSpeedRelativeSlider_sliderMoved(int position)
 {
-	this->updateSliderTooltip(this->ui->targetSpeedRelativeSlider, true, position);
+	updateSliderTooltip(ui->targetSpeedRelativeSlider, true, position);
 }
 
-void MainWindow::on_targetSpeedRelativeSlider_sliderPressed()
+void SetupWindow::on_targetSpeedRelativeSlider_sliderPressed()
 {
-	this->updateSliderTooltip(this->ui->targetSpeedRelativeSlider);
+	updateSliderTooltip(ui->targetSpeedRelativeSlider);
 }
 
-void MainWindow::updateSliderTooltip(QSlider *slider, bool updatePositon, int position)
+void SetupWindow::updateSliderTooltip(QSlider *slider, bool updatePositon, int position)
 {
 	if(updatePositon)
 		slider->setToolTip(tr("×%1").arg(speedMap[position]));
@@ -237,27 +234,22 @@ void MainWindow::updateSliderTooltip(QSlider *slider, bool updatePositon, int po
 					   slider);
 }
 
-void MainWindow::on_startConversionButton_clicked()
+void SetupWindow::on_startConversionButton_clicked()
 {
 	QStringList files;
-	for(int i = 0, max = this->ui->fileListWidget->count(); i < max; ++i)
-		files += this->ui->fileListWidget->item(i)->text();
+	for(int i = 0, max = ui->fileListWidget->count(); i < max; ++i)
+		files += ui->fileListWidget->item(i)->text();
 	if(!files.isEmpty()) {
-		QList<ConverterStream::SetupInfo*> setup;
-		setup.append(Q_NULLPTR);
-		setup.append(new ImageTransformator::TransformatorSetup(this->ui->targetSizeSpinBox->value(),
-																this->ui->frameRateDoubleSpinBox->value(),
-																speedMap[this->ui->targetSpeedRelativeSlider->value()]));
-		setup.append(new CachingGenerator::CachingSetup(AdvancedOptionsDialog::getValue(AdvancedOptionsDialog::CachingDirectory).toString()));
-		setup.append(new ApngAssembler::AssemblerSetup(this->ui->outputDirectoryCheckBox->isChecked() ?
-														   this->ui->outputDirectoryPathEdit->path() :
-														   QString(),
-													   -1,
-													   true,
-													   true,
-													   ApngAssembler::AssemblerSetup::Mode7zip,
-													   0));
+		QVariantHash setup;
+		setup.insert(QStringLiteral("size"), ui->targetSizeSpinBox->value());
+		setup.insert(QStringLiteral("frameRate"), ui->frameRateDoubleSpinBox->value());
+		setup.insert(QStringLiteral("speed"), speedMap[ui->targetSpeedRelativeSlider->value()]);
+		auto path = ui->cacheDirectoryPathEdit->path();
+		if(!path.isEmpty())
+			setup.insert(QStringLiteral("cacheDir"), path);
+		if(ui->outputDirectoryCheckBox->isChecked())
+			setup.insert(QStringLiteral("outDir"), ui->outputDirectoryPathEdit->path());
 		emit startConversion(files, setup);
-		this->close();
+		close();
 	}
 }

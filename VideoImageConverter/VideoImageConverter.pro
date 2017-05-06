@@ -32,7 +32,6 @@ HEADERS += \
 	videoloader.h \
 	videograbbersurface.h \
 	imageinfo.h \
-	mainwindow.h \
 	convertfilemodel.h \
 	convertfileinfo.h \
 	conversionprogressdialog.h \
@@ -40,14 +39,13 @@ HEADERS += \
 	imagetransformator.h \
 	converterstream.h \
 	cachinggenerator.h \
-	advancedoptionsdialog.h \
 	apngassembler.h \
-	piedrawer.h
+	piedrawer.h \
+    setupwindow.h
 
 SOURCES += main.cpp \
 	videoloader.cpp \
 	videograbbersurface.cpp \
-	mainwindow.cpp \
 	convertfilemodel.cpp \
 	convertfileinfo.cpp \
 	conversionprogressdialog.cpp \
@@ -55,14 +53,14 @@ SOURCES += main.cpp \
 	imagetransformator.cpp \
 	converterstream.cpp \
 	cachinggenerator.cpp \
-	advancedoptionsdialog.cpp \
 	apngassembler.cpp \
-	piedrawer.cpp
+	piedrawer.cpp \
+    setupwindow.cpp
 
 FORMS += \
-	mainwindow.ui \
 	conversionprogressdialog.ui \
-	advancedoptionsdialog.ui
+	advancedoptionsdialog.ui \
+    setupwindow.ui
 
 RESOURCES += \
 	videoimageconverter_res.qrc

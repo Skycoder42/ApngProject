@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef SETUPWINDOW_H
+#define SETUPWINDOW_H
 
 #include <QDialog>
 #include <QSlider>
@@ -8,19 +8,19 @@
 #include "converterstream.h"
 
 namespace Ui {
-	class MainWindow;
+	class SetupWindow;
 }
 
-class MainWindow : public QDialog
+class SetupWindow : public QDialog
 {
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
+	explicit SetupWindow(QWidget *parent = nullptr);
+	~SetupWindow();
 
 signals:
-	void startConversion(const QStringList &files, QList<ConverterStream::SetupInfo *> setup);
+	void startConversion(const QStringList &files, QVariantHash setup);
 
 private slots:
 	void on_actionAdd_Files_triggered();
@@ -39,7 +39,7 @@ private:
 	static QString supportedFormatsString;
 	static QHash<int, double> speedMap;
 
-	Ui::MainWindow *ui;
+	Ui::SetupWindow *ui;
 	QScopedPointer<QFileIconProvider> iconProvider;
 
 	void getFolderFiles(bool recursive);
@@ -47,4 +47,4 @@ private:
 	Q_INVOKABLE void showFolderResult(int count);
 };
 
-#endif // MAINWINDOW_H
+#endif // SETUPWINDOW_H
