@@ -36,8 +36,6 @@ private slots:
 	void on_startConversionButton_clicked();
 
 private:
-	static QHash<int, double> speedMap;
-
 	Ui::SetupWindow *ui;
 	QScopedPointer<QFileIconProvider> iconProvider;
 	VideoMimeSelector *mimeSelector;

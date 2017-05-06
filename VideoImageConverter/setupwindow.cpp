@@ -15,20 +15,6 @@
 	return action;\
 }()
 
-QHash<int, double> SetupWindow::speedMap = {
-	{-5, 1./32.},
-	{-4, 1./16.},
-	{-3, 1./8.},
-	{-2, 1./4.},
-	{-1, 1./2.},
-	{0, 1.},
-	{1, 2.},
-	{2, 4.},
-	{3, 8.},
-	{4, 16.},
-	{5, 32.},
-};
-
 SetupWindow::SetupWindow(QWidget *parent) :
 	QDialog(parent, Qt::Window |
 			Qt::WindowCloseButtonHint |
@@ -181,7 +167,7 @@ void SetupWindow::on_targetSpeedRelativeSlider_sliderPressed()
 void SetupWindow::updateSliderTooltip(QSlider *slider, bool updatePositon, int position)
 {
 	if(updatePositon)
-		slider->setToolTip(tr("×%1").arg(speedMap[position]));
+		slider->setToolTip(tr("×%1").arg(pow(2, position)));
 	QPoint pos;
 	pos.setY(slider->height() / 2);
 	pos.setX(QStyle::sliderPositionFromValue(slider->minimum(),
@@ -202,7 +188,7 @@ void SetupWindow::on_startConversionButton_clicked()
 		QVariantHash setup;
 		setup.insert(QStringLiteral("size"), ui->targetSizeSpinBox->value());
 		setup.insert(QStringLiteral("frameRate"), ui->frameRateDoubleSpinBox->value());
-		setup.insert(QStringLiteral("speed"), speedMap[ui->targetSpeedRelativeSlider->value()]);
+		setup.insert(QStringLiteral("speed"), pow(2, ui->targetSpeedRelativeSlider->value()));
 		auto path = ui->cacheDirectoryPathEdit->path();
 		if(!path.isEmpty())
 			setup.insert(QStringLiteral("cacheDir"), path);

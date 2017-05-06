@@ -114,9 +114,6 @@
             <property name="editable">
              <bool>true</bool>
             </property>
-            <property name="allowEmptyPath">
-             <bool>false</bool>
-            </property>
             <property name="placeholder">
              <string>Directory of original file</string>
             </property>
