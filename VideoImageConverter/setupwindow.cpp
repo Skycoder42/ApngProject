@@ -9,20 +9,12 @@
 #include <QSettings>
 #include <QtConcurrent>
 
-#include "convertfilemodel.h"
-#include "videoloader.h"
-#include "imagetransformator.h"
-#include "cachinggenerator.h"
-#include "apngassembler.h"
-
 #define SEPERATOR(parent) [&]() -> QAction* {\
 	auto action = new QAction(parent);\
 	action->setSeparator(true);\
 	return action;\
 }()
 
-QStringList SetupWindow::supportedFormatsList;
-QString SetupWindow::supportedFormatsString;
 QHash<int, double> SetupWindow::speedMap = {
 	{-5, 1./32.},
 	{-4, 1./16.},
@@ -42,7 +34,8 @@ SetupWindow::SetupWindow(QWidget *parent) :
 			Qt::WindowCloseButtonHint |
 			Qt::WindowMinMaxButtonsHint),
 	ui(new Ui::SetupWindow),
-	iconProvider(new QFileIconProvider())
+	iconProvider(new QFileIconProvider()),
+	mimeSelector(new VideoMimeSelector(this))
 {
 	ui->setupUi(this);
 	updateSliderTooltip(ui->targetSpeedRelativeSlider, true);
@@ -64,38 +57,6 @@ SetupWindow::SetupWindow(QWidget *parent) :
 									   SEPERATOR(ui->fileListWidget),
 									   ui->actionRemove_Selected_Files
 								   });
-
-	//formats
-	static bool once = true;
-	if(once) {
-		once = false;
-		QList<QStringList> supportedFormats = {
-			{ "AVI", "*.avi", "*.divx", "*.amv" },
-			{ "MPEG-PS", "*.mpg", "*.mpeg", "*.mpe", "*.m1v", "*.m2v", "*.mpv2", "*.mp2v", "*.m2p", "*.vob", "*.evo", "*.mod" },
-			{ "MPEG-TS", "*.ts", "*.m2ts", "*.m2t", "*.mts", "*.pva", "*.tp", "*.tpr" },
-			{ "MP4", "*.mp4", "*.m4v", "*.mp4v", "*.mpv4", "*.hdmov" },
-			{ "MOV", "*.mov" },
-			{ "3GP", "*.3gp", "*.3gpp", "*.3g2", "*.3gp2" },
-			{ "Matroska/WebM", "*.mkv", "*.webm" },
-			{ "Ogg",  "*.ogm", "*.ogv" },
-			{ "Flash Video", "*.flv", "*.f4v" },
-			{ "Windows Media", "*.wmv" },
-			{ "RealMedia", "*.rmvb", "*.rm" },
-			{ "Digital Video", "*.dv" },
-			{ "All", "*" }
-		};
-
-		foreach(auto lst, supportedFormats) {
-			auto str = lst.takeFirst();
-			supportedFormatsString.append(SetupWindow::tr("%1 Files (%2);;")
-										  .arg(str)
-										  .arg(lst.join(QLatin1Char(' '))));
-			supportedFormatsList.append(lst);
-		}
-
-		supportedFormatsString.resize(supportedFormatsString.size() - 2);
-		supportedFormatsList.removeAll(QStringLiteral("*"));
-	}
 
 	//settings restore
 	QSettings settings;
@@ -142,7 +103,7 @@ void SetupWindow::on_actionAdd_Files_triggered()
 	auto files = DialogMaster::getOpenFileNames(this,
 												tr("Open video files"),
 												QStandardPaths::writableLocation(QStandardPaths::MoviesLocation),
-												supportedFormatsString,
+												mimeSelector->generateNameFilterString(),
 												&selectedFilter);
 	settings.setValue(QStringLiteral("defaultFilter"), selectedFilter);
 	settings.endGroup();
@@ -166,10 +127,8 @@ void SetupWindow::getFolderFiles(bool recursive)
 													 tr("Open video folder"),
 													 QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
 
-	QDir dir(folder);
+	auto dir = mimeSelector->setupDirFilters(folder);
 	if(!folder.isEmpty() && dir.exists()) {
-		dir.setNameFilters(supportedFormatsList);
-		dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 		auto dialog = DialogMaster::createProgress(this, tr("Scanning directory…"));
 		QtConcurrent::run([=](){
 			int count = 0;

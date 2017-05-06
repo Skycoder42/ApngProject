@@ -29,38 +29,15 @@ LIBS += -lapngasm
 include(vendor/vendor.pri)
 
 HEADERS += \
-	videoloader.h \
-	videograbbersurface.h \
-	imageinfo.h \
-	convertfilemodel.h \
-	convertfileinfo.h \
-	conversionprogressdialog.h \
-	rammanager.h \
-	imagetransformator.h \
-	converterstream.h \
-	cachinggenerator.h \
-	apngassembler.h \
-	piedrawer.h \
-    setupwindow.h
+	setupwindow.h \
+    videomimeselector.h
 
 SOURCES += main.cpp \
-	videoloader.cpp \
-	videograbbersurface.cpp \
-	convertfilemodel.cpp \
-	convertfileinfo.cpp \
-	conversionprogressdialog.cpp \
-	rammanager.cpp \
-	imagetransformator.cpp \
-	converterstream.cpp \
-	cachinggenerator.cpp \
-	apngassembler.cpp \
-	piedrawer.cpp \
-    setupwindow.cpp
+	setupwindow.cpp \
+    videomimeselector.cpp
 
 FORMS += \
-	conversionprogressdialog.ui \
-	advancedoptionsdialog.ui \
-    setupwindow.ui
+	setupwindow.ui
 
 RESOURCES += \
 	videoimageconverter_res.qrc

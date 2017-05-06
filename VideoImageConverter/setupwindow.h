@@ -5,7 +5,8 @@
 #include <QSlider>
 #include <QFileIconProvider>
 #include <QScopedPointer>
-#include "converterstream.h"
+#include <QVariantHash>
+#include "videomimeselector.h"
 
 namespace Ui {
 	class SetupWindow;
@@ -35,12 +36,11 @@ private slots:
 	void on_startConversionButton_clicked();
 
 private:
-	static QStringList supportedFormatsList;
-	static QString supportedFormatsString;
 	static QHash<int, double> speedMap;
 
 	Ui::SetupWindow *ui;
 	QScopedPointer<QFileIconProvider> iconProvider;
+	VideoMimeSelector *mimeSelector;
 
 	void getFolderFiles(bool recursive);
 	Q_INVOKABLE void addFileItem(const QString &file);
