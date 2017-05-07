@@ -7,13 +7,14 @@
 class PieDrawer
 {
 public:
-	PieDrawer();
-
-	QIcon getPie(int progress);
+	static QIcon getPie(double progress);
 
 private:
-	QIcon indeterminateIcon;
-	QHash<int, QIcon> pieMap;
+	static QIcon indeterminateIcon;
+	static QHash<int, QIcon> pieMap;
+
+	PieDrawer() Q_DECL_EQ_DELETE;
+	~PieDrawer() Q_DECL_EQ_DELETE;
 };
 
 #endif // PIEDRAWER_H

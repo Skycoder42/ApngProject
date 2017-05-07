@@ -34,7 +34,8 @@ HEADERS += \
 	converterengine.h \
 	converterstatus.h \
 	conversionwindow.h \
-	rammanager.h
+	rammanager.h \
+    piedrawer.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
@@ -42,7 +43,8 @@ SOURCES += main.cpp \
 	converterengine.cpp \
 	converterstatus.cpp \
 	conversionwindow.cpp \
-	rammanager.cpp
+	rammanager.cpp \
+    piedrawer.cpp
 
 FORMS += \
 	setupwindow.ui \

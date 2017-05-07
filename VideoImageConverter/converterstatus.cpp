@@ -1,5 +1,5 @@
 #include "converterstatus.h"
-
+#include "piedrawer.h"
 #include <QFile>
 
 QIcon ConverterStatus::iconForStatus(Status status)
@@ -101,7 +101,7 @@ double ConverterStatus::progress() const
 
 QIcon ConverterStatus::progressIcon() const
 {
-	return QIcon();//TODO piedrawer
+	return PieDrawer::getPie(_progress);
 }
 
 QString ConverterStatus::progressText() const
