@@ -2,105 +2,111 @@
 
 ConverterStream::ConverterStream(QObject *parent) :
 	QObject(parent),
-	nextStream(Q_NULLPTR),
-	convertQueue(),
-	isActive(false),
-	progressCounter(0),
-	working(false),
-	statusOk(true),
-	selfReady(false),
-	pastChainReady(true),
-	isAborted(false)
+	_nextStream(nullptr),
+	_queue(),
+	_progress(0),
+	_working(false),
+	_selfReady(false),
+	_nextStreamReady(true),
+	_aborted(false)
 {}
 
 void ConverterStream::pipeTo(ConverterStream *nextStream)
 {
-	this->pastChainReady = false;
-	this->nextStream = nextStream;
-	connect(this, &ConverterStream::completed,
-			nextStream, &ConverterStream::enqueue,
-			Qt::QueuedConnection);
-	connect(nextStream, &ConverterStream::chainFinished,
-			this, &ConverterStream::nextStreamChainReady,
-			Qt::QueuedConnection);
+	if(_nextStream)
+		_nextStream->pipeTo(nextStream);
+	else {
+		_nextStreamReady = false;
+		_nextStream = nextStream;
+		_nextStream->setParent(this);
+		connect(this, &ConverterStream::completed,
+				nextStream, &ConverterStream::enqueue,
+				Qt::QueuedConnection);
+		connect(nextStream, &ConverterStream::chainFinished,
+				this, &ConverterStream::nextStreamFinished,
+				Qt::QueuedConnection);
+	}
 }
 
-void ConverterStream::startChain(QList<SetupInfo*> setup)
+bool ConverterStream::setupChain(const QVariantHash &setupHash)
 {
-	if(!this->isActive) {
-		SetupInfo* mySetup = Q_NULLPTR;
-		if(!setup.isEmpty())
-			mySetup = setup.takeFirst();
-
-		if(this->nextStream)
-			QMetaObject::invokeMethod(this->nextStream, "startChain", Qt::QueuedConnection,
-									  Q_ARG(QList<ConverterStream::SetupInfo*>, setup));
-
-		if(!this->setUp(mySetup)) {
-			emit showMessage(Q_NULLPTR,
-							 tr("Failed to set up %1 with error: %2")
-							 .arg(this->componentName())
-							 .arg(this->lastError()),
-							 QMessageBox::Critical);
-			this->statusOk = false;
-			this->completeComponent();
-		} else {
-			emit progressUpdate(this->progressCounter);
-			this->isActive = true;
-		}
-		delete mySetup;
+	if(!setup(setupHash)) {
+		emit showMessage(nullptr,
+						 tr("Failed to set up %1 with error: %2")
+						 .arg(componentName())
+						 .arg(lastError()),
+						 QtCriticalMsg);
+		return false;
+	} else {
+		if(_nextStream)
+			return _nextStream->setupChain(setupHash);
+		else
+			return true;
 	}
+}
+
+int ConverterStream::chainSize() const
+{
+	if(_nextStream)
+		return _nextStream->chainSize() + 1;
+	else
+		return 1;
+}
+
+QStringList ConverterStream::streamNames() const
+{
+	QStringList names;
+	if(_nextStream)
+		names = _nextStream->streamNames();
+	names.prepend(componentName());
+	return names;
 }
 
 void ConverterStream::enqueue(ConvertFileInfo *info)
 {
-	if(this->isActive) {
-		Q_ASSERT_X(info, Q_FUNC_INFO, "The passed ConvertFileInfo must not be nullptr");
-		this->convertQueue.enqueue(info);
-		if(!this->working) {
-			this->working = true;
-			QMetaObject::invokeMethod(this, "handleNext", Qt::QueuedConnection);
-		}
+	Q_ASSERT(info);
+	_queue.enqueue(info);
+	if(!_working) {
+		_working = true;
+		QMetaObject::invokeMethod(this, "handleNext", Qt::QueuedConnection);
 	}
 }
 
-void ConverterStream::finishChain()
+void ConverterStream::completeChain()
 {
-	if(this->isActive) {
-		if(!this->working)
-			this->completeComponent();
-		else
-			this->convertQueue.enqueue(Q_NULLPTR);
-	}
+	if(!_working)
+		completeComponent();
+	else
+		_queue.enqueue(nullptr);
 }
 
 void ConverterStream::abortChain()
 {
-	if(this->nextStream)
-		QMetaObject::invokeMethod(this->nextStream, "abortChain", Qt::QueuedConnection);
-	this->isAborted = true;
-	if(this->working)
-		this->abort();
+	if(_nextStream)
+		QMetaObject::invokeMethod(_nextStream, "abortChain", Qt::QueuedConnection);
+	_aborted = true;
+	if(_working)
+		abort();
 	else
-		this->completeComponent();
+		completeComponent();
 }
 
 ConvertFileInfo *ConverterStream::current() const
 {
-	if(this->convertQueue.isEmpty())
-		return Q_NULLPTR;
+	if(_queue.isEmpty())
+		return nullptr;
 	else
-		return this->convertQueue.head();
+		return _queue.head();
 }
 
 bool ConverterStream::wasAborted() const
 {
-	return this->isAborted;
+	return _aborted;
 }
 
-bool ConverterStream::setUp(SetupInfo *setup)
+bool ConverterStream::setup(const QVariantHash &setupHash)
 {
-	Q_UNUSED(setup);
+	Q_UNUSED(setupHash);
 	return true;
 }
 
@@ -109,56 +115,53 @@ bool ConverterStream::tearDown()
 	return true;
 }
 
-void ConverterStream::abort() {}
-
-void ConverterStream::handleFinished()
+void ConverterStream::infoDone()
 {
-	if(this->isAborted) {
-		this->working = false;
-		this->completeComponent();
+	if(_aborted) {
+		_working = false;
+		completeComponent();
 		return;
 	}
 
-	auto item = this->convertQueue.dequeue();
-	emit progressUpdate(++this->progressCounter);
+	auto item = _queue.dequeue();
+	emit progressUpdate(++_progress);
 	if(item->status() != ConvertFileInfo::Error)
 		emit completed(item);
 
-	if(!this->convertQueue.isEmpty()) {
-		if(this->convertQueue.head() == Q_NULLPTR) {
-			this->convertQueue.dequeue();
-			this->working = false;
-			this->completeComponent();
+	if(!_queue.isEmpty()) {
+		if(_queue.head() == nullptr) {
+			_queue.dequeue();
+			_working = false;
+			completeComponent();
 		} else
 			QMetaObject::invokeMethod(this, "handleNext", Qt::QueuedConnection);
 	} else
-		this->working = false;
+		_working = false;
 }
 
-void ConverterStream::nextStreamChainReady()
+void ConverterStream::abort() {}
+
+void ConverterStream::nextStreamFinished()
 {
-	this->pastChainReady = true;
-	if(this->selfReady)
+	_nextStreamReady = true;
+	if(_selfReady)
 		emit chainFinished();
 }
 
 void ConverterStream::completeComponent()
 {
-	if(!this->isAborted && this->nextStream)
-		QMetaObject::invokeMethod(this->nextStream, "finishChain", Qt::QueuedConnection);
-	if(this->isActive) {
-		if(!this->tearDown()) {
-			emit showMessage(Q_NULLPTR,
-							 tr("Failed to tear down %1 with error: %2")
-							 .arg(this->componentName())
-							 .arg(this->lastError()),
-							 QMessageBox::Critical);
-			this->statusOk = false;
-		}
+	if(!_aborted && _nextStream)
+		QMetaObject::invokeMethod(_nextStream, "finishChain", Qt::QueuedConnection);
+
+	if(!tearDown()) {
+		emit showMessage(nullptr,
+						 tr("Failed to tear down %1 with error: %2")
+						 .arg(componentName())
+						 .arg(lastError()),
+						 QtCriticalMsg);
 	}
-	emit finished();
-	this->selfReady = true;
-	if(this->pastChainReady)
+
+	_selfReady = true;
+	if(_nextStreamReady)
 		emit chainFinished();
-	this->isActive = false;
 }

@@ -26,13 +26,19 @@ public:
 	explicit ConversionWindow(ConverterEngine *engine, QWidget *parent = nullptr);
 	~ConversionWindow();
 
+public slots:
+	void open(const QStringList &streamNames);
+
 protected:
+#ifdef Q_OS_WIN
 	void showEvent(QShowEvent *event) override;
+#endif
 	void closeEvent(QCloseEvent *event) final;
 
 private slots:
 	void updateRamUsage();
 	void postMessage(ConverterStatus *info, QString text, const QtMsgType &msgType, bool updateInfo);
+	void updateProgress(int index, int progress);
 	void lastFinished();
 
 private:
@@ -47,6 +53,7 @@ private:
 
 	QGenericListModel<ConverterStatus> *converterModel;
 	QObjectProxyModel *proxyModel;
+	QHash<int, QProgressBar*> streamBars;
 
 	QProgressBar *ramBar;
 	QLabel *ramLabel;

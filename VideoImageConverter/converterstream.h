@@ -2,7 +2,6 @@
 #define CONVERTERSTREAM_H
 
 #include <QObject>
-#include <QMessageBox>
 #include <QQueue>
 #include <QPointer>
 #include "convertfileinfo.h"
@@ -12,61 +11,54 @@ class ConverterStream : public QObject
 	Q_OBJECT
 
 public:
-	struct SetupInfo {
-		inline virtual ~SetupInfo() {}
-	};
+	explicit ConverterStream(QObject *parent = nullptr);
 
-	explicit ConverterStream(QObject *parent = Q_NULLPTR);
-
-	void pipeTo(ConverterStream *nextStream);
+	void pipeTo(ConverterStream *_nextStream);
+	bool setupChain(const QVariantHash &setupHash);
+	int chainSize() const;
+	QStringList streamNames() const;
 
 public slots:
-	void startChain(QList<ConverterStream::SetupInfo *> setup = QQueue<SetupInfo *>());
 	void enqueue(ConvertFileInfo *info);
-	void finishChain();
-
+	void completeChain();
 	void abortChain();
 
 signals:
 	void progressUpdate(int progress);
-	void showMessage(ConvertFileInfo* info, const QString &text, const QMessageBox::Icon &icon = QMessageBox::Information, bool updateInfo = true);
+	void showMessage(ConvertFileInfo* info, const QString &text, const QtMsgType &type = QtInfoMsg, bool updateInfo = true);
 
+	//internal
 	void completed(ConvertFileInfo *info);
-	void finished();
 	void chainFinished();
 
 protected:
 	ConvertFileInfo *current() const;
 	bool wasAborted() const;
 
-	virtual QString componentName() = 0;
-	virtual bool setUp(SetupInfo *setup);
+	virtual QString componentName() const = 0;
+	virtual bool setup(const QVariantHash &setupHash);
 	virtual bool tearDown();
-	virtual void abort();
-	virtual QString lastError() = 0;
+	virtual QString lastError() const = 0;
 
 protected slots:
 	virtual void handleNext() = 0;
-	void handleFinished();
+	void infoDone();
+	virtual void abort();
 
-	void nextStreamChainReady();
+private slots:
+	void nextStreamFinished();
 
 private:
-	QPointer<ConverterStream> nextStream;
-	QQueue<ConvertFileInfo*> convertQueue;
-	bool isActive;
-	int progressCounter;
-	bool working;
-	bool statusOk;
+	ConverterStream *_nextStream;
+	QQueue<ConvertFileInfo*> _queue;
+	int _progress;
+	bool _working;
 
-	bool selfReady;
-	bool pastChainReady;
-	bool isAborted;
+	bool _selfReady;
+	bool _nextStreamReady;
+	bool _aborted;
 
 	void completeComponent();
 };
-
-Q_DECLARE_METATYPE(QList<ConverterStream::SetupInfo*>)
-Q_DECLARE_METATYPE(QMessageBox::Icon)
 
 #endif // CONVERTERSTREAM_H

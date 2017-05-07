@@ -35,7 +35,9 @@ HEADERS += \
 	converterstatus.h \
 	conversionwindow.h \
 	rammanager.h \
-    piedrawer.h
+    piedrawer.h \
+    convertfileinfo.h \
+    converterstream.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
@@ -44,7 +46,9 @@ SOURCES += main.cpp \
 	converterstatus.cpp \
 	conversionwindow.cpp \
 	rammanager.cpp \
-    piedrawer.cpp
+    piedrawer.cpp \
+    convertfileinfo.cpp \
+    converterstream.cpp
 
 FORMS += \
 	setupwindow.ui \

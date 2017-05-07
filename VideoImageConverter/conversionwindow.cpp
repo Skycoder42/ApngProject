@@ -17,6 +17,7 @@ ConversionWindow::ConversionWindow(ConverterEngine *engine, QWidget *parent) :
 #endif
 	converterModel(engine->model()),
 	proxyModel(new QObjectProxyModel({tr("Status"), tr("Filename"), tr("Status-Text"), tr("Progress")}, this)),
+	streamBars(),
 	ramBar(new QProgressBar(this)),
 	ramLabel(new QLabel(this)),
 	ramUsageTimer(new QTimer(this))
@@ -50,9 +51,11 @@ ConversionWindow::ConversionWindow(ConverterEngine *engine, QWidget *parent) :
 
 	//engine
 	connect(engine, &ConverterEngine::showProgress,
-			this, &ConversionWindow::show);
+			this, &ConversionWindow::open);
 	connect(engine, &ConverterEngine::postMessage,
 			this, &ConversionWindow::postMessage);
+	connect(engine, &ConverterEngine::updateProgress,
+			this, &ConversionWindow::updateProgress);
 	connect(engine, &ConverterEngine::completed,
 			this, &ConversionWindow::lastFinished);
 
@@ -77,14 +80,26 @@ ConversionWindow::~ConversionWindow()
 	delete ui;
 }
 
+void ConversionWindow::open(const QStringList &streamNames)
+{
+	auto index = 0;
+	foreach(auto name, streamNames) {
+		auto bar = new QProgressBar(ui->progressBox);
+		bar->setMaximum(converterModel->rowCount());
+		bar->setValue(0);
+		ui->progressLayout->addRow(tr("%1 Progress:").arg(name), bar);
+		streamBars.insert(index++, bar);
+	}
+
+	show();
+	raise();
+	activateWindow();
+}
+
+#ifdef Q_OS_WIN
 void ConversionWindow::showEvent(QShowEvent *event)
 {
-	ui->conversionProgressBar->setMaximum(converterModel->rowCount());
-	ui->transformationProgressBar->setMaximum(converterModel->rowCount());
-	ui->cachingProgressBar->setMaximum(converterModel->rowCount());
-	ui->savingProgressBar->setMaximum(converterModel->rowCount());
 	QMainWindow::showEvent(event);
-#ifdef Q_OS_WIN
 	if(!taskBarButton->window()) {
 		taskBarButton->setWindow(windowHandle());
 		auto bar = taskBarButton->progress();
@@ -93,8 +108,8 @@ void ConversionWindow::showEvent(QShowEvent *event)
 		connect(assembler, &VideoLoader::progressUpdate,
 				bar, &QWinTaskbarProgress::setValue);
 	}
-#endif
 }
+#endif
 
 void ConversionWindow::closeEvent(QCloseEvent *event)
 {
@@ -166,6 +181,13 @@ void ConversionWindow::postMessage(ConverterStatus *info, QString text, const Qt
 
 	if(msgType == QtCriticalMsg)
 		DialogMaster::critical(this, text, tr("Critical Error occured!"));
+}
+
+void ConversionWindow::updateProgress(int index, int progress)
+{
+	auto bar = streamBars.value(index, nullptr);
+	if(bar)//TODO update total
+		bar->setValue(progress);
 }
 
 void ConversionWindow::lastFinished()

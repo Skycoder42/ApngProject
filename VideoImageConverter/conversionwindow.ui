@@ -19,52 +19,11 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="progressBox">
       <property name="title">
        <string>Progress</string>
       </property>
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="conversionProgressLabel">
-         <property name="text">
-          <string>Conversion Progress:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QProgressBar" name="conversionProgressBar"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="transformationProgressLabel">
-         <property name="text">
-          <string>Transformation Progress:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QProgressBar" name="transformationProgressBar"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="cachingProgressLabel">
-         <property name="text">
-          <string>Caching Progress:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QProgressBar" name="cachingProgressBar"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="savingProgressLabel">
-         <property name="text">
-          <string>Saving Progress:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QProgressBar" name="savingProgressBar"/>
-       </item>
-      </layout>
+      <layout class="QFormLayout" name="progressLayout"/>
      </widget>
     </item>
     <item>

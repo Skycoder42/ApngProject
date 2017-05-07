@@ -5,37 +5,34 @@
 #include <QLinkedList>
 #include <QTemporaryDir>
 #include <QScopedPointer>
-#include "imageinfo.h"
-class ConverterStream;
+#include <QImage>
+#include "converterstatus.h"
+#include <apngasm.h>
 
-class ConvertFileInfo : public QObject
+class ConvertFileInfo : public ConverterStatus
 {
 	Q_OBJECT
 
 public:
+	typedef QPair<QImage, double> ImageInfo;
 	typedef QLinkedList<ImageInfo>::Iterator ImageIterator;
 
-	ConvertFileInfo(const QString &filename = QString(), QObject *parent = Q_NULLPTR);
+	ConvertFileInfo(const QString &filename = QString(), QObject *parent = nullptr);
 
 	//internal functions
-	QLinkedList<ImageInfo> imageData() const;
-	void setImageData(const QLinkedList<ImageInfo> &dataList);
-	void resetImageData();
-	QTemporaryDir *cacheDir() const;
-	void setCacheDir(QTemporaryDir *cacheDir);
+	QLinkedList<ImageInfo> data() const;
+	void setData(const QLinkedList<ImageInfo> &dataList);
+	void resetData();
+	QTemporaryDir *cache() const;
+	void setCache(QTemporaryDir *cache);
 
 	ImageIterator imageBegin();
 	ImageIterator imageEnd();
 	ImageIterator removeFrame(const ImageIterator &iterator);
 
 private:
-	const QString origFileName;
-	Status currentStatus;
-	QString currentStatusText;
-	QLinkedList<ImageInfo> convertData;
-	QScopedPointer<QTemporaryDir> cachingDir;
-	int currentProg;
-	QString progressBaseText;
+	QLinkedList<ImageInfo> _data;
+	QScopedPointer<QTemporaryDir> _cache;
 };
 
 #endif // CONVERTFILEINFO_H
