@@ -101,7 +101,10 @@ double ConverterStatus::progress() const
 
 QIcon ConverterStatus::progressIcon() const
 {
-	return PieDrawer::getPie(_progress);
+	if(_progressBaseText.isEmpty())
+		return QIcon();
+	else
+		return PieDrawer::getPie(_progress);
 }
 
 QString ConverterStatus::progressText() const
@@ -136,7 +139,9 @@ void ConverterStatus::setProgress(double progress)
 
 void ConverterStatus::resetProgress()
 {
-	setProgress(-1.0);
+	_progressBaseText.clear();
+	_progress = -1.0;
+	emit progressChanged();
 }
 
 void ConverterStatus::setProgressBaseText(QString progressText)
