@@ -37,7 +37,9 @@ HEADERS += \
 	rammanager.h \
     piedrawer.h \
     convertfileinfo.h \
-    converterstream.h
+    converterstream.h \
+    videograbbersurface.h \
+    videoloaderstream.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
@@ -48,7 +50,9 @@ SOURCES += main.cpp \
 	rammanager.cpp \
     piedrawer.cpp \
     convertfileinfo.cpp \
-    converterstream.cpp
+    converterstream.cpp \
+    videograbbersurface.cpp \
+    videoloaderstream.cpp
 
 FORMS += \
 	setupwindow.ui \

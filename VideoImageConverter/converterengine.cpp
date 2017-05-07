@@ -18,6 +18,8 @@ void ConverterEngine::addConverter(ConverterStream *stream)
 	else {
 		_stream = stream;
 		_stream->setParent(this);
+		connect(_stream, &ConverterStream::chainFinished,
+				this, &ConverterEngine::completed);
 	}
 
 	auto streamIndex = _stream->chainSize() - 1;
@@ -33,10 +35,19 @@ void ConverterEngine::addConverter(ConverterStream *stream)
 void ConverterEngine::startConversion(const QStringList &files, const QVariantHash &setup)
 {
 	Q_ASSERT(_stream);
+
+	if(!_stream->setupChain(setup))
+		return;
+
 	QList<ConverterStatus*> infos;
-	foreach(auto file, files)
-		infos.append(new ConvertFileInfo(file));
+	foreach(auto file, files) {
+		auto info = new ConvertFileInfo(file);
+		infos.append(info);
+		_stream->enqueue(info);
+	}
+	_stream->completeChain();
 	_model->resetModel(infos);
+
 	emit showProgress(_stream->streamNames());
 }
 

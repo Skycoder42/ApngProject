@@ -5,13 +5,12 @@
 #define ANGLE_MAX 5760
 #define ANGLE_DELTA ANGLE_MAX * 0.25
 
-QIcon PieDrawer::indeterminateIcon(QStringLiteral(":/icons/indeterminate.ico"));
 QHash<int, QIcon> PieDrawer::pieMap;
 
 QIcon PieDrawer::getPie(double progress)
 {
 	if(progress < 0.0)
-		return indeterminateIcon;
+		return QIcon(QStringLiteral(":/icons/indeterminate.ico"));
 	else {
 		auto percent = qMin<int>(100, progress * 100);
 		if(!pieMap.contains(percent)) {

@@ -47,3 +47,28 @@ ConvertFileInfo::ImageIterator ConvertFileInfo::removeFrame(const ConvertFileInf
 {
 	return _data.erase(iterator);
 }
+
+void ConvertFileInfo::updateStatus(ConverterStatus::Status status)
+{
+	QMetaObject::invokeMethod(this, "updateStatus", Q_ARG(ConverterStatus::Status, status));
+}
+
+void ConvertFileInfo::setProgress(double progress)
+{
+	QMetaObject::invokeMethod(this, "setProgress", Q_ARG(double, progress));
+}
+
+void ConvertFileInfo::resetProgress()
+{
+	QMetaObject::invokeMethod(this, "resetProgress");
+}
+
+void ConvertFileInfo::setProgressBaseText(QString progressText)
+{
+	QMetaObject::invokeMethod(this, "setProgressBaseText", Q_ARG(QString, progressText));
+}
+
+void ConvertFileInfo::setResultText(QString resultText)
+{
+	QMetaObject::invokeMethod(this, "setResultText", Q_ARG(QString, resultText));
+}

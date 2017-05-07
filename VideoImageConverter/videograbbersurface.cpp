@@ -1,4 +1,5 @@
 #include "videograbbersurface.h"
+#include <QSet>
 #include <QVideoSurfaceFormat>
 
 static void simpleCleanupHandler(void *info)
@@ -7,12 +8,13 @@ static void simpleCleanupHandler(void *info)
 }
 
 VideoGrabberSurface::VideoGrabberSurface(QObject *parent) :
-	QAbstractVideoSurface(parent)
+	QAbstractVideoSurface(parent),
+	_formats()
 {}
 
 QList<QVideoFrame::PixelFormat> VideoGrabberSurface::supportedPixelFormats(QAbstractVideoBuffer::HandleType) const
 {
-	static QList<QVideoFrame::PixelFormat> pixelFormats = []() {
+	if(_formats.isEmpty()) {
 		QList<QImage::Format> baseFormats =  {
 			QImage::Format_Mono,
 			QImage::Format_MonoLSB,
@@ -40,17 +42,17 @@ QList<QVideoFrame::PixelFormat> VideoGrabberSurface::supportedPixelFormats(QAbst
 			QImage::Format_Grayscale8,
 		};
 
-		QList<QVideoFrame::PixelFormat> pixelFormats;
+		QSet<QVideoFrame::PixelFormat> pixelFormats;
 		foreach(QImage::Format format, baseFormats) {
 			QVideoFrame::PixelFormat pf = QVideoFrame::pixelFormatFromImageFormat(format);
 			if(pf != QVideoFrame::Format_Invalid)
-				pixelFormats.append(pf);
+				pixelFormats.insert(pf);
 		}
 
-		return pixelFormats;
-	}();
+		_formats = pixelFormats.toList();
+	}
 
-	return pixelFormats;
+	return _formats;
 }
 
 bool VideoGrabberSurface::present(const QVideoFrame &frame)

@@ -53,7 +53,7 @@ public:
 	QString resultText() const;
 
 public slots:
-	void updateStatus(Status status);
+	void updateStatus(ConverterStatus::Status status);
 	void setProgress(double progress);
 	void resetProgress();
 	void setProgressBaseText(QString progressText);

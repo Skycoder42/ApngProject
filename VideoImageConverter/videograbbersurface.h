@@ -2,20 +2,23 @@
 #define VIDEOGRABBERSURFACE_H
 
 #include <QAbstractVideoSurface>
-#include "imageinfo.h"
+#include "convertfileinfo.h"
 
 class VideoGrabberSurface : public QAbstractVideoSurface
 {
 	Q_OBJECT
 
 public:
-	VideoGrabberSurface(QObject *parent = Q_NULLPTR);
+	VideoGrabberSurface(QObject *parent = nullptr);
 
-	QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const Q_DECL_OVERRIDE;
-	bool present(const QVideoFrame &frame) Q_DECL_OVERRIDE;
+	QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const override;
+	bool present(const QVideoFrame &frame) override;
 
 signals:
-	void imageLoaded(ImageInfo info);
+	void imageLoaded(ConvertFileInfo::ImageInfo info);
+
+private:
+	mutable QList<QVideoFrame::PixelFormat> _formats;
 };
 
 #endif // VIDEOGRABBERSURFACE_H

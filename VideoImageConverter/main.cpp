@@ -5,6 +5,8 @@
 #include "conversionwindow.h"
 #include "converterengine.h"
 
+#include "videoloaderstream.h"
+
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
@@ -15,7 +17,11 @@ int main(int argc, char *argv[])
 	QApplication::setApplicationDisplayName(QCoreApplication::translate("main", "Video to APNG-Converter"));
 	QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/main.ico")));
 
+	qRegisterMetaType<QtMsgType>("QtMsgType");
+
 	ConverterEngine engine;
+	engine.addConverter(new VideoLoaderStream());
+
 	SetupWindow setupWindow;
 	ConversionWindow converterWindow(&engine);
 	QObject::connect(&setupWindow, &SetupWindow::startConversion,

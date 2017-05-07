@@ -30,6 +30,13 @@ public:
 	ImageIterator imageEnd();
 	ImageIterator removeFrame(const ImageIterator &iterator);
 
+	//method overshadowing
+	void updateStatus(Status status);
+	void setProgress(double progress);
+	void resetProgress();
+	void setProgressBaseText(QString progressText);
+	void setResultText(QString resultText);
+
 private:
 	QLinkedList<ImageInfo> _data;
 	QScopedPointer<QTemporaryDir> _cache;

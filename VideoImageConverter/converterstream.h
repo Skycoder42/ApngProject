@@ -15,6 +15,7 @@ public:
 
 	void pipeTo(ConverterStream *_nextStream);
 	bool setupChain(const QVariantHash &setupHash);
+
 	int chainSize() const;
 	QStringList streamNames() const;
 

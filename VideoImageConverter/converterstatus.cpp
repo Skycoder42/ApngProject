@@ -39,15 +39,15 @@ QString ConverterStatus::textForStatus(Status status)
 	case Converting:
 		return tr("Converting…");
 	case Converted:
-		return tr("Converted! Waiting for transformation…");
+		return tr("Converted! Waiting…");
 	case Transforming:
 		return tr("Transforming…");
 	case Transformed:
-		return tr("Transformed! Waiting for caching…");
+		return tr("Transformed! Waiting…");
 	case Caching:
 		return tr("Caching frames…");
 	case Cached:
-		return tr("Frames cached! Waiting for saving…");
+		return tr("Frames cached! Waiting…");
 	case Saving:
 		return tr("Saving file…");
 	case Success:
