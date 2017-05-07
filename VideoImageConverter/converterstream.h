@@ -48,6 +48,7 @@ protected slots:
 
 private slots:
 	void nextStreamFinished();
+	void infoDoneImpl();
 
 private:
 	ConverterStream *_nextStream;

@@ -39,7 +39,8 @@ HEADERS += \
     convertfileinfo.h \
     converterstream.h \
     videograbbersurface.h \
-    videoloaderstream.h
+    videoloaderstream.h \
+    imagetransformatorstream.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
@@ -52,7 +53,8 @@ SOURCES += main.cpp \
     convertfileinfo.cpp \
     converterstream.cpp \
     videograbbersurface.cpp \
-    videoloaderstream.cpp
+    videoloaderstream.cpp \
+    imagetransformatorstream.cpp
 
 FORMS += \
 	setupwindow.ui \

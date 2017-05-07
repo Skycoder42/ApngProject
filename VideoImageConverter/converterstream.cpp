@@ -117,6 +117,20 @@ bool ConverterStream::tearDown()
 
 void ConverterStream::infoDone()
 {
+	QMetaObject::invokeMethod(this, "infoDoneImpl", Qt::QueuedConnection);
+}
+
+void ConverterStream::abort() {}
+
+void ConverterStream::nextStreamFinished()
+{
+	_nextStreamReady = true;
+	if(_selfReady)
+		emit chainFinished();
+}
+
+void ConverterStream::infoDoneImpl()
+{
 	if(_aborted) {
 		_working = false;
 		completeComponent();
@@ -139,19 +153,10 @@ void ConverterStream::infoDone()
 		_working = false;
 }
 
-void ConverterStream::abort() {}
-
-void ConverterStream::nextStreamFinished()
-{
-	_nextStreamReady = true;
-	if(_selfReady)
-		emit chainFinished();
-}
-
 void ConverterStream::completeComponent()
 {
 	if(!_aborted && _nextStream)
-		QMetaObject::invokeMethod(_nextStream, "finishChain", Qt::QueuedConnection);
+		QMetaObject::invokeMethod(_nextStream, "completeChain", Qt::QueuedConnection);
 
 	if(!tearDown()) {
 		emit showMessage(nullptr,

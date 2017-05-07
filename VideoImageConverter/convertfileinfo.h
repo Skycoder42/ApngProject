@@ -23,8 +23,6 @@ public:
 	QLinkedList<ImageInfo> data() const;
 	void setData(const QLinkedList<ImageInfo> &dataList);
 	void resetData();
-	QTemporaryDir *cache() const;
-	void setCache(QTemporaryDir *cache);
 
 	ImageIterator imageBegin();
 	ImageIterator imageEnd();
@@ -39,7 +37,7 @@ public:
 
 private:
 	QLinkedList<ImageInfo> _data;
-	QScopedPointer<QTemporaryDir> _cache;
+	int _dummyProgress;
 };
 
 #endif // CONVERTFILEINFO_H

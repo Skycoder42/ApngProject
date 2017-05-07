@@ -1,11 +1,12 @@
 #include "convertfileinfo.h"
 #include <QHash>
 #include <QCoreApplication>
+#include <QThread>
 
 ConvertFileInfo::ConvertFileInfo(const QString &filename, QObject *parent) :
 	ConverterStatus(filename, parent),
 	_data(),
-	_cache()
+	_dummyProgress(-1)
 {}
 
 QLinkedList<ConvertFileInfo::ImageInfo> ConvertFileInfo::data() const
@@ -21,16 +22,6 @@ void ConvertFileInfo::setData(const QLinkedList<ImageInfo> &dataList)
 void ConvertFileInfo::resetData()
 {
 	_data.clear();
-}
-
-QTemporaryDir *ConvertFileInfo::cache() const
-{
-	return _cache.data();
-}
-
-void ConvertFileInfo::setCache(QTemporaryDir *cacheDir)
-{
-	_cache.reset(cacheDir);
 }
 
 ConvertFileInfo::ImageIterator ConvertFileInfo::imageBegin()
@@ -50,25 +41,35 @@ ConvertFileInfo::ImageIterator ConvertFileInfo::removeFrame(const ConvertFileInf
 
 void ConvertFileInfo::updateStatus(ConverterStatus::Status status)
 {
-	QMetaObject::invokeMethod(this, "updateStatus", Q_ARG(ConverterStatus::Status, status));
+	QMetaObject::invokeMethod(this, "updateStatus", Qt::QueuedConnection,
+							  Q_ARG(ConverterStatus::Status, status));
 }
 
 void ConvertFileInfo::setProgress(double progress)
 {
-	QMetaObject::invokeMethod(this, "setProgress", Q_ARG(double, progress));
+	int nProg = progress * 100;
+	if(nProg != _dummyProgress) {
+		_dummyProgress = nProg;
+		QThread::msleep(10);
+		QMetaObject::invokeMethod(this, "setProgress", Qt::QueuedConnection,
+								  Q_ARG(double, progress));
+	}
 }
 
 void ConvertFileInfo::resetProgress()
 {
-	QMetaObject::invokeMethod(this, "resetProgress");
+	_dummyProgress = -1;
+	QMetaObject::invokeMethod(this, "resetProgress", Qt::QueuedConnection);
 }
 
 void ConvertFileInfo::setProgressBaseText(QString progressText)
 {
-	QMetaObject::invokeMethod(this, "setProgressBaseText", Q_ARG(QString, progressText));
+	QMetaObject::invokeMethod(this, "setProgressBaseText", Qt::QueuedConnection,
+							  Q_ARG(QString, progressText));
 }
 
 void ConvertFileInfo::setResultText(QString resultText)
 {
-	QMetaObject::invokeMethod(this, "setResultText", Q_ARG(QString, resultText));
+	QMetaObject::invokeMethod(this, "setResultText", Qt::QueuedConnection,
+							  Q_ARG(QString, resultText));
 }

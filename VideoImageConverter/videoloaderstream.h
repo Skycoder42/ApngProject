@@ -12,7 +12,7 @@ class VideoLoaderStream : public ConverterStream
 	Q_OBJECT
 
 public:
-	explicit VideoLoaderStream(QObject *parent = Q_NULLPTR);
+	explicit VideoLoaderStream(QObject *parent = nullptr);
 
 protected:
 	QString componentName() const override;

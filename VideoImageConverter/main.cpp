@@ -6,6 +6,7 @@
 #include "converterengine.h"
 
 #include "videoloaderstream.h"
+#include "imagetransformatorstream.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,9 +19,11 @@ int main(int argc, char *argv[])
 	QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/main.ico")));
 
 	qRegisterMetaType<QtMsgType>("QtMsgType");
+	qRegisterMetaType<ConverterStatus::Status>();
 
 	ConverterEngine engine;
 	engine.addConverter(new VideoLoaderStream());
+	engine.addConverter(new ImageTransformatorStream());
 
 	SetupWindow setupWindow;
 	ConversionWindow converterWindow(&engine);
