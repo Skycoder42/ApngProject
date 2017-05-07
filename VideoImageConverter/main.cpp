@@ -7,6 +7,7 @@
 
 #include "videoloaderstream.h"
 #include "imagetransformatorstream.h"
+#include "apngassemblerstream.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
 	ConverterEngine engine;
 	engine.addConverter(new VideoLoaderStream());
 	engine.addConverter(new ImageTransformatorStream());
+	engine.addConverter(new ApngAssemblerStream());
 
 	SetupWindow setupWindow;
 	ConversionWindow converterWindow(&engine);

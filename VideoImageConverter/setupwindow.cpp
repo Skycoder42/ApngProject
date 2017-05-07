@@ -60,7 +60,6 @@ SetupWindow::SetupWindow(QWidget *parent) :
 		break;
 	}
 	settings.endGroup();
-	ui->cacheDirectoryPathEdit->setPath(settings.value(QStringLiteral("cache")).toString());
 }
 
 SetupWindow::~SetupWindow()
@@ -76,7 +75,6 @@ SetupWindow::~SetupWindow()
 	else if(ui->addButton->defaultAction() == ui->actionAdd_Folder_Recursive)
 		settings.setValue(QStringLiteral("defaultOpenAction"), 2);
 	settings.endGroup();
-	settings.setValue(QStringLiteral("cache"), ui->cacheDirectoryPathEdit->path());
 
 	delete ui;
 }
@@ -189,9 +187,6 @@ void SetupWindow::on_startConversionButton_clicked()
 		setup.insert(QStringLiteral("size"), ui->targetSizeSpinBox->value());
 		setup.insert(QStringLiteral("frameRate"), ui->frameRateDoubleSpinBox->value());
 		setup.insert(QStringLiteral("speed"), pow(2, ui->targetSpeedRelativeSlider->value()));
-		auto path = ui->cacheDirectoryPathEdit->path();
-		if(!path.isEmpty())
-			setup.insert(QStringLiteral("cacheDir"), path);
 		if(ui->outputDirectoryCheckBox->isChecked())
 			setup.insert(QStringLiteral("outDir"), ui->outputDirectoryPathEdit->path());
 		emit startConversion(files, setup);

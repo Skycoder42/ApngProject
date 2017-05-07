@@ -40,7 +40,8 @@ HEADERS += \
     converterstream.h \
     videograbbersurface.h \
     videoloaderstream.h \
-    imagetransformatorstream.h
+    imagetransformatorstream.h \
+    apngassemblerstream.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
@@ -54,7 +55,8 @@ SOURCES += main.cpp \
     converterstream.cpp \
     videograbbersurface.cpp \
     videoloaderstream.cpp \
-    imagetransformatorstream.cpp
+    imagetransformatorstream.cpp \
+    apngassemblerstream.cpp
 
 FORMS += \
 	setupwindow.ui \
