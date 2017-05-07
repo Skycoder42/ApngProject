@@ -45,6 +45,7 @@ void ApngAssemblerStream::handleNext()
 
 		apngasm::APNGAsm apngAsm;
 		auto cnt = 0;
+		auto max = (double)info->data().size();
 		for(auto it = info->imageBegin(); it != info->imageEnd();) {
 			if(wasAborted())
 				break;
@@ -70,7 +71,7 @@ void ApngAssemblerStream::handleNext()
 							 qRound(it->second),
 							 1000);
 			delete[] rgba;
-			info->setProgress(cnt++/(double)info->data().size());
+			info->setProgress(cnt++/max);
 			it = info->removeFrame(it);
 		}
 
