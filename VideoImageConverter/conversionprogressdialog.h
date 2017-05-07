@@ -4,15 +4,14 @@
 #include <QMainWindow>
 #include <QProgressBar>
 #include <QTimer>
+#include <QLabel>
+#include <qobjectlistmodel.h>
+#include <qobjectproxymodel.h>
 #ifdef Q_OS_WIN
 #include <QWinTaskbarButton>
 #include <QWinTaskbarProgress>
 #endif
-#include "convertfilemodel.h"
-#include "videoloader.h"
-#include "imagetransformator.h"
-#include "cachinggenerator.h"
-#include "apngassembler.h"
+#include "converterstatus.h"
 
 namespace Ui {
 	class ConversionProgressDialog;
@@ -23,21 +22,21 @@ class ConversionProgressDialog : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit ConversionProgressDialog(QWidget *parent = 0);
+	explicit ConversionProgressDialog(QWidget *parent = nullptr);
 	~ConversionProgressDialog();
 
 public slots:
-	void startConversion(const QStringList &files, QList<ConverterStream::SetupInfo *> setup);
+	void startConversion(const QStringList &files, QVariantHash setup);
 
 protected:
 #ifdef Q_OS_WIN
-	void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+	void showEvent(QShowEvent *event) override;
 #endif
-	void closeEvent(QCloseEvent *event) Q_DECL_FINAL;
+	void closeEvent(QCloseEvent *event) final;
 
 private slots:
 	void updateRamUsage();
-	void postMessage(ConvertFileInfo *info, QString text, const QMessageBox::Icon &icon, bool updateInfo);
+	void postMessage(ConverterStatus *info, QString text, const QtMsgType &msgType, bool updateInfo);
 	void lastFinished();
 
 private:
@@ -48,11 +47,8 @@ private:
 	QWinTaskbarButton *taskBarButton;
 #endif
 
-	ConvertFileModel *fileModel;
-	VideoLoader *loader;
-	ImageTransformator *transformer;
-	CachingGenerator *cacher;
-	ApngAssembler *assembler;
+	QGenericListModel<ConverterStatus> *fileModel;
+	QObjectProxyModel *proxyModel;
 
 	QProgressBar *ramBar;
 	QLabel *ramLabel;

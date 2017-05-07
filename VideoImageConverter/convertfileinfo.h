@@ -2,8 +2,6 @@
 #define CONVERTFILEINFO_H
 
 #include <QObject>
-#include <QVariant>
-#include <QIcon>
 #include <QLinkedList>
 #include <QTemporaryDir>
 #include <QScopedPointer>
@@ -14,45 +12,10 @@ class ConvertFileInfo : public QObject
 {
 	Q_OBJECT
 
-	Q_PROPERTY(QString filename READ filename CONSTANT FINAL)
-	Q_PROPERTY(Status status READ status WRITE updateStatus NOTIFY statusChanged)
-	Q_PROPERTY(QString resultText READ resultText WRITE setResultText NOTIFY resultTextChanged)
-
 public:
-	enum Status {
-		Waiting,
-		Converting,
-		Converted,
-		Transforming,
-		Transformed,
-		Caching,
-		Cached,
-		Saving,
-		Success,
-		Error
-	};
-	Q_ENUM(Status)
-
 	typedef QLinkedList<ImageInfo>::Iterator ImageIterator;
 
-	static QIcon iconForStatus(Status status);
-	static QString textForStatus(Status status);
-
 	ConvertFileInfo(const QString &filename = QString(), QObject *parent = Q_NULLPTR);
-
-	Q_INVOKABLE bool isValid() const;
-
-	QString filename() const;
-	Status status() const;
-	inline QIcon statusIcon() const {
-		return ConvertFileInfo::iconForStatus(this->status());
-	}
-	inline QString statusText() const {
-		return ConvertFileInfo::textForStatus(this->status());
-	}
-	QString resultText() const;	
-	int currentProgress() const;
-	QString progressText() const;
 
 	//internal functions
 	QLinkedList<ImageInfo> imageData() const;
