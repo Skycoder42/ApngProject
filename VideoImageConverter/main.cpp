@@ -3,6 +3,7 @@
 #include <QUrl>
 #include "setupwindow.h"
 #include "conversionwindow.h"
+#include "converterengine.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,14 +15,12 @@ int main(int argc, char *argv[])
 	QApplication::setApplicationDisplayName(QCoreApplication::translate("main", "Video to APNG-Converter"));
 	QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/main.ico")));
 
-	//qRegisterMetaType<ConvertFileInfo::Status>();
-	//qRegisterMetaType<QMessageBox::Icon>();
+	ConverterEngine engine;
+	SetupWindow setupWindow;
+	ConversionWindow converterWindow(&engine);
+	QObject::connect(&setupWindow, &SetupWindow::startConversion,
+					 &engine, &ConverterEngine::startConversion);
 
-	SetupWindow w;
-	ConversionWindow c(nullptr);
-	QObject::connect(&w, &SetupWindow::startConversion,
-					 &c, &ConversionWindow::show);
-	w.show();
-
+	setupWindow.show();
 	return a.exec();
 }

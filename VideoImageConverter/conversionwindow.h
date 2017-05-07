@@ -12,6 +12,7 @@
 #include <QWinTaskbarProgress>
 #endif
 #include "converterstatus.h"
+#include "converterengine.h"
 
 namespace Ui {
 	class ConversionWindow;
@@ -22,7 +23,7 @@ class ConversionWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit ConversionWindow(QGenericListModel<ConverterStatus> *converterModel, QWidget *parent = nullptr);
+	explicit ConversionWindow(ConverterEngine *engine, QWidget *parent = nullptr);
 	~ConversionWindow();
 
 protected:
@@ -35,6 +36,8 @@ private slots:
 	void lastFinished();
 
 private:
+	ConverterEngine *engine;
+
 	Ui::ConversionWindow *ui;
 	bool canClose;
 	bool isAborting;

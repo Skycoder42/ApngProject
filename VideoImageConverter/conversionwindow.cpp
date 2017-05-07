@@ -6,15 +6,16 @@
 #include <dialogmaster.h>
 #include "rammanager.h"
 
-ConversionWindow::ConversionWindow(QGenericListModel<ConverterStatus> *converterModel, QWidget *parent) :
+ConversionWindow::ConversionWindow(ConverterEngine *engine, QWidget *parent) :
 	QMainWindow(parent),
+	engine(engine),
 	ui(new Ui::ConversionWindow),
 	canClose(false),
 	isAborting(false),
 #ifdef Q_OS_WIN
 	taskBarButton(new QWinTaskbarButton(this)),
 #endif
-	converterModel(converterModel),
+	converterModel(engine->model()),
 	proxyModel(new QObjectProxyModel({tr("Status"), tr("Filename"), tr("Status-Text"), tr("Progress")}, this)),
 	ramBar(new QProgressBar(this)),
 	ramLabel(new QLabel(this)),
@@ -48,13 +49,12 @@ ConversionWindow::ConversionWindow(QGenericListModel<ConverterStatus> *converter
 	ramUsageTimer->start(500);
 
 	//engine
-	//TODO connect
-//	connect(loader, &VideoLoader::progressUpdate,
-//			ui->conversionProgressBar, &QProgressBar::setValue);
-//	connect(loader, &VideoLoader::showMessage,
-//			this, &ConversionProgressDialog::postMessage);
-//	connect(loader, &VideoLoader::chainFinished,
-//			this, &ConversionProgressDialog::lastFinished);
+	connect(engine, &ConverterEngine::showProgress,
+			this, &ConversionWindow::show);
+	connect(engine, &ConverterEngine::postMessage,
+			this, &ConversionWindow::postMessage);
+	connect(engine, &ConverterEngine::completed,
+			this, &ConversionWindow::lastFinished);
 
 	//settings stuff
 	QSettings settings;
@@ -111,8 +111,7 @@ void ConversionWindow::closeEvent(QCloseEvent *event)
 									  tr("Cancel conversion?"))
 			   == QMessageBox::Yes) {
 				isAborting = true;
-				//TODO loader->abortChain();
-				postMessage(nullptr, tr("Aborting. Please wait…"), QtWarningMsg, false);
+				engine->abortConversion();
 			}
 		}
 	}
@@ -179,8 +178,9 @@ void ConversionWindow::lastFinished()
 									 tr("Abort completed!"),
 									 tr("Abort"),
 									 QMessageBox::Ok | QMessageBox::Close)
-			== QMessageBox::Close)
-			close();
+		   == QMessageBox::Close) {
+			QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+		}
 	} else {
 		auto openAll = false;
 		auto config = DialogMaster::createInformation(QString(), this);

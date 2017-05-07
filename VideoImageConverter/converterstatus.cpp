@@ -101,7 +101,7 @@ double ConverterStatus::progress() const
 
 QIcon ConverterStatus::progressIcon() const
 {
-	return QIcon();//TODO
+	return QIcon();//TODO piedrawer
 }
 
 QString ConverterStatus::progressText() const
