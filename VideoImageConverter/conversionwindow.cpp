@@ -119,7 +119,7 @@ void ConversionWindow::closeEvent(QCloseEvent *event)
 
 void ConversionWindow::updateRamUsage()
 {
-	auto size = 0;//TODO RamManager::fetchMegaBytesUsage();
+	auto size = RamManager::fetchMegaBytesUsage();
 	ramLabel->setText(tr("RAM-usage: %L1 MB").arg(size));
 	if(size > 4096)
 		ramBar->setRange(0, 0);
@@ -172,7 +172,6 @@ void ConversionWindow::lastFinished()
 {
 	canClose = true;
 	if(isAborting) {
-		postMessage(nullptr, tr("Aborting successfully completed."), QtWarningMsg, false);
 		if(DialogMaster::information(this,
 									 tr("You can now check the output and close the application."),
 									 tr("Abort completed!"),

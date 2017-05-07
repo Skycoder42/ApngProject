@@ -30,21 +30,23 @@ include(vendor/vendor.pri)
 
 HEADERS += \
 	setupwindow.h \
-    videomimeselector.h \
-    converterengine.h \
-    converterstatus.h \
-    conversionwindow.h
+	videomimeselector.h \
+	converterengine.h \
+	converterstatus.h \
+	conversionwindow.h \
+	rammanager.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
-    videomimeselector.cpp \
-    converterengine.cpp \
-    converterstatus.cpp \
-    conversionwindow.cpp
+	videomimeselector.cpp \
+	converterengine.cpp \
+	converterstatus.cpp \
+	conversionwindow.cpp \
+	rammanager.cpp
 
 FORMS += \
 	setupwindow.ui \
-    conversionwindow.ui
+	conversionwindow.ui
 
 RESOURCES += \
 	videoimageconverter_res.qrc

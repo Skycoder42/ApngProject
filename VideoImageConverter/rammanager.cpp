@@ -2,10 +2,12 @@
 #if defined(Q_OS_WIN)
 #include "qt_windows.h"
 #include "psapi.h"
-#elif defined(Q_OS_UNIX)
-#include <sys/resource.h>
-#include <errno.h>
-#include <QDebug>
+#elif defined(Q_OS_LINUX)
+#include <unistd.h>
+#include <ios>
+#include <iostream>
+#include <fstream>
+#include <string>
 #endif
 
 bool RamManager::ramUsageOk()
@@ -24,14 +26,20 @@ int RamManager::fetchMegaBytesUsage()
 		return size;
 	} else
 		return -1;
-#elif defined(Q_OS_UNIX)
-	rusage use;
-	if(getrusage(RUSAGE_SELF, &use) == 0)
-		return use.ru_maxrss / 10024;
-	else {
-		qWarning() << "Failed with error code:" << errno;
-		return -1;
+#elif defined(Q_OS_LINUX)
+	long rss;
+	{
+		std::string ignore;
+		std::ifstream ifs("/proc/self/stat", std::ios_base::in);
+		ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+				>> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+				>> ignore >> ignore >> ignore >> rss;
 	}
+
+	long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
+	rss *= page_size_kb;
+	rss /= 1024;
+	return (int)rss;
 #else
 	Q_UNIMPLEMENTED();
 	return -1;

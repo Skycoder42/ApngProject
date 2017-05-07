@@ -20,5 +20,6 @@ void ConverterEngine::startConversion(const QStringList &files, const QVariantHa
 void ConverterEngine::abortConversion()
 {
 	emit postMessage(nullptr, tr("Aborting. Please wait…"), QtWarningMsg, false);
+	emit postMessage(nullptr, tr("Aborting successfully completed."), QtWarningMsg, false);
 	emit completed();
 }
