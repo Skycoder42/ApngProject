@@ -4,10 +4,7 @@
 #include "psapi.h"
 #elif defined(Q_OS_LINUX)
 #include <unistd.h>
-#include <ios>
-#include <iostream>
 #include <fstream>
-#include <string>
 #endif
 
 bool RamManager::ramUsageOk()
@@ -27,19 +24,16 @@ int RamManager::fetchMegaBytesUsage()
 	} else
 		return -1;
 #elif defined(Q_OS_LINUX)
-	long rss;
-	{
-		std::string ignore;
-		std::ifstream ifs("/proc/self/stat", std::ios_base::in);
-		ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
-				>> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
-				>> ignore >> ignore >> ignore >> rss;
-	}
+	int tSize = 0, resident = 0, share = 0;
+	std::ifstream buffer("/proc/self/statm");
+	buffer >> tSize >> resident >> share;
+	buffer.close();
 
-	long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
-	rss *= page_size_kb;
-	rss /= 1024;
-	return (int)rss;
+	auto page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
+	auto rss = resident * page_size_kb;
+	auto shared_mem = share * page_size_kb;
+	auto priv_mem = rss - shared_mem;
+	return (int)priv_mem/1024;
 #else
 	Q_UNIMPLEMENTED();
 	return -1;
