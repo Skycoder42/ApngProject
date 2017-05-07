@@ -28,8 +28,6 @@ public:
 		Converted,
 		Transforming,
 		Transformed,
-		Caching,
-		Cached,
 		Saving,
 		Success,
 		Error

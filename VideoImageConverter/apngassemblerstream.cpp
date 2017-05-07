@@ -77,10 +77,11 @@ void ApngAssemblerStream::handleNext()
 			info->setProgress(-1);
 			info->setProgressBaseText(tr("Saving file"));
 
-			apngAsm.assemble(resPath.absoluteFilePath().toStdString());
-
+			if(apngAsm.assemble(resPath.absoluteFilePath().toStdString()))
+				info->updateStatus(ConvertFileInfo::Success);
+			else
+				emit showMessage(info, tr("APNG Assembler failed to create the file"), QtCriticalMsg);
 			info->resetProgress();
-			info->updateStatus(ConvertFileInfo::Success);
 		}
 		infoDone();
 	});

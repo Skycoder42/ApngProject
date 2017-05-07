@@ -16,7 +16,5 @@
         <file alias="transformed.ico">resources/transform_ok.ico</file>
         <file alias="error.ico">resources/cross_shield.ico</file>
         <file alias="success.ico">resources/Icojam-Onebit-Ok.ico</file>
-        <file alias="cached.ico">resources/database_green.ico</file>
-        <file alias="caching.ico">resources/database_go.ico</file>
     </qresource>
 </RCC>

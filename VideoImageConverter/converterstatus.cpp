@@ -15,10 +15,6 @@ QIcon ConverterStatus::iconForStatus(Status status)
 		return QIcon(QStringLiteral(":/icons/status/transforming.ico"));
 	case Transformed:
 		return QIcon(QStringLiteral(":/icons/status/transformed.ico"));
-	case Caching:
-		return QIcon(QStringLiteral(":/icons/status/caching.ico"));
-	case Cached:
-		return QIcon(QStringLiteral(":/icons/status/cached.ico"));
 	case Saving:
 		return QIcon(QStringLiteral(":/icons/status/saving.ico"));
 	case Success:
@@ -44,10 +40,6 @@ QString ConverterStatus::textForStatus(Status status)
 		return tr("Transforming…");
 	case Transformed:
 		return tr("Transformed! Waiting…");
-	case Caching:
-		return tr("Caching frames…");
-	case Cached:
-		return tr("Frames cached! Waiting…");
 	case Saving:
 		return tr("Saving file…");
 	case Success:
