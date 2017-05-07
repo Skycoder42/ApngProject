@@ -45,7 +45,7 @@ void ApngAssemblerStream::handleNext()
 
 		apngasm::APNGAsm apngAsm;
 		auto cnt = 0;
-		for(auto it = info->imageBegin(); it != info->imageEnd(); it++) {
+		for(auto it = info->imageBegin(); it != info->imageEnd();) {
 			if(wasAborted())
 				break;
 			QImage image = it->first;
@@ -71,15 +71,19 @@ void ApngAssemblerStream::handleNext()
 							 1000);
 			delete[] rgba;
 			info->setProgress(cnt++/(double)info->data().size());
+			it = info->removeFrame(it);
 		}
 
 		if(!wasAborted()) {
 			info->setProgress(-1);
 			info->setProgressBaseText(tr("Saving file"));
+			emit showMessage(info, tr("All frames successfully cached"), QtInfoMsg);
 
-			if(apngAsm.assemble(resPath.absoluteFilePath().toStdString()))
+			info->resetData();
+			if(apngAsm.assemble(resPath.absoluteFilePath().toStdString())) {
 				info->updateStatus(ConvertFileInfo::Success);
-			else
+				emit showMessage(info, tr("APNG file created"), QtInfoMsg);
+			} else
 				emit showMessage(info, tr("APNG Assembler failed to create the file"), QtCriticalMsg);
 			info->resetProgress();
 		}
