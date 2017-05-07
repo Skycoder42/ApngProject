@@ -7,7 +7,7 @@ class ConverterEngine : public QObject
 {
 	Q_OBJECT
 public:
-	explicit ConverterEngine(QObject *parent = 0);
+	explicit ConverterEngine(QObject *parent = nullptr);
 
 signals:
 

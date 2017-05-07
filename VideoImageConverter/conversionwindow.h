@@ -1,5 +1,5 @@
-#ifndef CONVERSIONPROGRESSDIALOG_H
-#define CONVERSIONPROGRESSDIALOG_H
+#ifndef CONVERSIONWINDOW_H
+#define CONVERSIONWINDOW_H
 
 #include <QMainWindow>
 #include <QProgressBar>
@@ -14,24 +14,19 @@
 #include "converterstatus.h"
 
 namespace Ui {
-	class ConversionProgressDialog;
+	class ConversionWindow;
 }
 
-class ConversionProgressDialog : public QMainWindow
+class ConversionWindow : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	explicit ConversionProgressDialog(QWidget *parent = nullptr);
-	~ConversionProgressDialog();
-
-public slots:
-	void startConversion(const QStringList &files, QVariantHash setup);
+	explicit ConversionWindow(QGenericListModel<ConverterStatus> *converterModel, QWidget *parent = nullptr);
+	~ConversionWindow();
 
 protected:
-#ifdef Q_OS_WIN
 	void showEvent(QShowEvent *event) override;
-#endif
 	void closeEvent(QCloseEvent *event) final;
 
 private slots:
@@ -40,14 +35,14 @@ private slots:
 	void lastFinished();
 
 private:
-	Ui::ConversionProgressDialog *ui;
+	Ui::ConversionWindow *ui;
 	bool canClose;
 	bool isAborting;
 #ifdef Q_OS_WIN
 	QWinTaskbarButton *taskBarButton;
 #endif
 
-	QGenericListModel<ConverterStatus> *fileModel;
+	QGenericListModel<ConverterStatus> *converterModel;
 	QObjectProxyModel *proxyModel;
 
 	QProgressBar *ramBar;
@@ -55,4 +50,4 @@ private:
 	QTimer *ramUsageTimer;
 };
 
-#endif // CONVERSIONPROGRESSDIALOG_H
+#endif // CONVERSIONWINDOW_H

@@ -1,20 +1,20 @@
-#include "conversionprogressdialog.h"
-#include "ui_conversionprogressdialog.h"
+#include "conversionwindow.h"
+#include "ui_conversionwindow.h"
 #include <QStatusBar>
 #include <QCloseEvent>
 #include <QSettings>
 #include <dialogmaster.h>
 #include "rammanager.h"
 
-ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
+ConversionWindow::ConversionWindow(QGenericListModel<ConverterStatus> *converterModel, QWidget *parent) :
 	QMainWindow(parent),
-	ui(new Ui::ConversionProgressDialog),
+	ui(new Ui::ConversionWindow),
 	canClose(false),
 	isAborting(false),
 #ifdef Q_OS_WIN
 	taskBarButton(new QWinTaskbarButton(this)),
 #endif
-	fileModel(new QGenericListModel<ConverterStatus>(false, this)),
+	converterModel(converterModel),
 	proxyModel(new QObjectProxyModel({tr("Status"), tr("Filename"), tr("Status-Text"), tr("Progress")}, this)),
 	ramBar(new QProgressBar(this)),
 	ramLabel(new QLabel(this)),
@@ -27,7 +27,7 @@ ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
 								tr("Error-Log"));
 
 	//model
-	proxyModel->setSourceModel(fileModel);
+	proxyModel->setSourceModel(converterModel);
 	proxyModel->addMapping(0, Qt::DisplayRole, "statusText");
 	proxyModel->addMapping(0, Qt::DecorationRole, "statusIcon");
 	proxyModel->addMapping(1, Qt::DisplayRole, "filename");
@@ -44,7 +44,7 @@ ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
 	statusBar()->addPermanentWidget(ramLabel);
 	statusBar()->addPermanentWidget(ramBar);
 	connect(ramUsageTimer, &QTimer::timeout,
-			this, &ConversionProgressDialog::updateRamUsage);
+			this, &ConversionWindow::updateRamUsage);
 	ramUsageTimer->start(500);
 
 	//engine
@@ -65,7 +65,7 @@ ConversionProgressDialog::ConversionProgressDialog(QWidget *parent) :
 	settings.endGroup();
 }
 
-ConversionProgressDialog::~ConversionProgressDialog()
+ConversionWindow::~ConversionWindow()
 {
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("progressWindow"));
@@ -77,22 +77,14 @@ ConversionProgressDialog::~ConversionProgressDialog()
 	delete ui;
 }
 
-void ConversionProgressDialog::startConversion(const QStringList &files, QVariantHash setup)
+void ConversionWindow::showEvent(QShowEvent *event)
 {
-	foreach(auto file, files)
-		fileModel->addObject(new ConverterStatus(file));
-	ui->conversionProgressBar->setMaximum(files.size());
-	ui->transformationProgressBar->setMaximum(files.size());
-	ui->cachingProgressBar->setMaximum(files.size());
-	ui->savingProgressBar->setMaximum(files.size());
-	show();
-	//TODO loader->startConversion(fileModel->allItems(), setup);
-}
-
-#ifdef Q_OS_WIN
-void ConversionProgressDialog::showEvent(QShowEvent *event)
-{
+	ui->conversionProgressBar->setMaximum(converterModel->rowCount());
+	ui->transformationProgressBar->setMaximum(converterModel->rowCount());
+	ui->cachingProgressBar->setMaximum(converterModel->rowCount());
+	ui->savingProgressBar->setMaximum(converterModel->rowCount());
 	QMainWindow::showEvent(event);
+#ifdef Q_OS_WIN
 	if(!taskBarButton->window()) {
 		taskBarButton->setWindow(windowHandle());
 		auto bar = taskBarButton->progress();
@@ -101,10 +93,10 @@ void ConversionProgressDialog::showEvent(QShowEvent *event)
 		connect(assembler, &VideoLoader::progressUpdate,
 				bar, &QWinTaskbarProgress::setValue);
 	}
-}
 #endif
+}
 
-void ConversionProgressDialog::closeEvent(QCloseEvent *event)
+void ConversionWindow::closeEvent(QCloseEvent *event)
 {
 	if(canClose)
 		event->accept();
@@ -126,7 +118,7 @@ void ConversionProgressDialog::closeEvent(QCloseEvent *event)
 	}
 }
 
-void ConversionProgressDialog::updateRamUsage()
+void ConversionWindow::updateRamUsage()
 {
 	auto size = 0;//TODO RamManager::fetchMegaBytesUsage();
 	ramLabel->setText(tr("RAM-usage: %L1 MB").arg(size));
@@ -138,7 +130,7 @@ void ConversionProgressDialog::updateRamUsage()
 	}
 }
 
-void ConversionProgressDialog::postMessage(ConverterStatus *info, QString text, const QtMsgType &msgType, bool updateInfo)
+void ConversionWindow::postMessage(ConverterStatus *info, QString text, const QtMsgType &msgType, bool updateInfo)
 {
 	if(info) {
 		if(updateInfo)
@@ -177,7 +169,7 @@ void ConversionProgressDialog::postMessage(ConverterStatus *info, QString text, 
 		DialogMaster::critical(this, text, tr("Critical Error occured!"));
 }
 
-void ConversionProgressDialog::lastFinished()
+void ConversionWindow::lastFinished()
 {
 	canClose = true;
 	if(isAborting) {
@@ -196,7 +188,7 @@ void ConversionProgressDialog::lastFinished()
 		config.checked = &openAll;
 		config.checkString = tr("Open all target folders");
 		QStringList errorFiles;
-		foreach(auto item, fileModel->objects()) {
+		foreach(auto item, converterModel->objects()) {
 			if(item->status() == ConverterStatus::Error) {
 				auto error = tr("File \"%1\", Error: %2")
 							 .arg(item->filename())

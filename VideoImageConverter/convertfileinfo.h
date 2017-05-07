@@ -28,19 +28,6 @@ public:
 	ImageIterator imageEnd();
 	ImageIterator removeFrame(const ImageIterator &iterator);
 
-public slots:
-	void updateStatus(ConvertFileInfo::Status status);
-	void setResultText(const QString &text);
-	void setCurrentProgress(int progress);
-	void setCurrentProgress(int value, int maximum);
-	void setProgressBaseText(QString progressText);
-	void resetProgress();
-
-signals:
-	void statusChanged(ConvertFileInfo::Status status);
-	void resultTextChanged(QString resultText);
-	void currentProgressChanged();
-
 private:
 	const QString origFileName;
 	Status currentStatus;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ConversionProgressDialog</class>
- <widget class="QMainWindow" name="ConversionProgressDialog">
+ <class>ConversionWindow</class>
+ <widget class="QMainWindow" name="ConversionWindow">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
   </property>
@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ConversionProgressDialog</string>
+   <string>Conversion Status</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">

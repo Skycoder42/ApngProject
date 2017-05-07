@@ -32,19 +32,19 @@ HEADERS += \
 	setupwindow.h \
     videomimeselector.h \
     converterengine.h \
-    conversionprogressdialog.h \
-    converterstatus.h
+    converterstatus.h \
+    conversionwindow.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
     videomimeselector.cpp \
     converterengine.cpp \
-    conversionprogressdialog.cpp \
-    converterstatus.cpp
+    converterstatus.cpp \
+    conversionwindow.cpp
 
 FORMS += \
 	setupwindow.ui \
-    conversionprogressdialog.ui
+    conversionwindow.ui
 
 RESOURCES += \
 	videoimageconverter_res.qrc
