@@ -5,7 +5,6 @@
         <file alias="delete.ico">resources/page_white_delete.ico</file>
         <file alias="files.ico">resources/page_white_stack.ico</file>
         <file alias="main.ico">resources/main.ico</file>
-        <file alias="reset.ico">resources/arrow_undo.ico</file>
         <file alias="indeterminate.png">resources/ui-progress-bar-indeterminate-icon.png</file>
     </qresource>
     <qresource prefix="/icons/status">
