@@ -17,7 +17,7 @@ QString VideoLoaderStream::componentName() const
 	return tr("Video Converter");
 }
 
-bool VideoLoaderStream::setup(const QVariantHash &)
+bool VideoLoaderStream::setup(const QVariantHash &setupHash)
 {
 	_readPlayer = new QMediaPlayer(this, QMediaPlayer::VideoSurface);
 	_grabber = new VideoGrabberSurface(this);
@@ -61,6 +61,7 @@ void VideoLoaderStream::handleNext()
 	if(RamManager::ramUsageOk()) {
 		_ramWaiting = false;
 		auto info = current();
+
 		info->setProgressBaseText(tr("Reading video frames…"));
 		info->updateStatus(ConverterStatus::Converting);
 		_readPlayer->setMedia(QUrl::fromLocalFile(info->filename()));

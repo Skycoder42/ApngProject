@@ -36,11 +36,11 @@ SetupWindow::SetupWindow(QWidget *parent) :
 	ui->removeButton->setDefaultAction(ui->actionRemove_Selected_Files);
 
 	//treeview actions
-	ui->fileListWidget->addActions({
+	ui->fileTreeWidget->addActions({
 									   ui->actionAdd_Files,
 									   ui->actionAdd_Folder,
 									   ui->actionAdd_Folder_Recursive,
-									   SEPERATOR(ui->fileListWidget),
+									   SEPERATOR(ui->fileTreeWidget),
 									   ui->actionRemove_Selected_Files
 								   });
 
@@ -82,14 +82,18 @@ SetupWindow::~SetupWindow()
 void SetupWindow::on_actionAdd_Files_triggered()
 {
 	QSettings settings;
-	settings.beginGroup(QStringLiteral("setupWindow"));
-	QString selectedFilter = settings.value(QStringLiteral("defaultFilter")).toString();
+	settings.beginGroup(QStringLiteral("setupWindow/files"));
+	auto selectedFilter = settings.value(QStringLiteral("filter")).toString();
+	auto dir = settings.value(QStringLiteral("dir"), QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)).toString();
 	auto files = DialogMaster::getOpenFileNames(this,
 												tr("Open video files"),
-												QStandardPaths::writableLocation(QStandardPaths::MoviesLocation),
+												dir,
 												mimeSelector->generateNameFilterString(),
 												&selectedFilter);
-	settings.setValue(QStringLiteral("defaultFilter"), selectedFilter);
+	if(!files.isEmpty()) {
+		settings.setValue(QStringLiteral("filter"), selectedFilter);
+		settings.setValue(QStringLiteral("dir"), QFileInfo(files.first()).dir().absolutePath());
+	}
 	settings.endGroup();
 	foreach (auto file, files)
 		addFileItem(file);
@@ -107,12 +111,17 @@ void SetupWindow::on_actionAdd_Folder_Recursive_triggered()
 
 void SetupWindow::getFolderFiles(bool recursive)
 {
+	QSettings settings;
+	settings.beginGroup(QStringLiteral("setupWindow/files"));
+	auto eDir = settings.value(QStringLiteral("dir"), QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)).toString();
 	auto folder = DialogMaster::getExistingDirectory(this,
 													 tr("Open video folder"),
-													 QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
+													 eDir);
 
 	auto dir = mimeSelector->setupDirFilters(folder);
 	if(!folder.isEmpty() && dir.exists()) {
+		settings.setValue(QStringLiteral("dir"), folder);
+
 		auto dialog = DialogMaster::createProgress(this, tr("Scanning directory…"));
 		QtConcurrent::run([=](){
 			int count = 0;
@@ -130,13 +139,34 @@ void SetupWindow::getFolderFiles(bool recursive)
 									  Q_ARG(int, count));
 		});
 	}
+
+	settings.endGroup();
 }
 
 void SetupWindow::addFileItem(const QString &file)
 {
-	new QListWidgetItem(iconProvider->icon(file),
-						file,
-						ui->fileListWidget);
+	QFileInfo info(file);
+	auto item = new QTreeWidgetItem(ui->fileTreeWidget);
+	item->setIcon(0, iconProvider->icon(file));
+	item->setText(0, info.fileName());
+	item->setText(2, info.absoluteFilePath());
+
+	static const QStringList base = {
+		tr("%L1 B"),
+		tr("%L1 kB"),
+		tr("%L1 MB")
+	};
+	auto i = 0;
+	auto size = (double)info.size();
+	for(; i < base.size(); i++) {
+		if(size > 1024)
+			size /= 1024;
+		else
+			break;
+	}
+	if(i == info.size())
+		i--;
+	item->setText(1, base[i].arg(size, 0, 'f', 1));
 }
 
 void SetupWindow::showFolderResult(int count)
@@ -149,7 +179,7 @@ void SetupWindow::showFolderResult(int count)
 
 void SetupWindow::on_actionRemove_Selected_Files_triggered()
 {
-	qDeleteAll(ui->fileListWidget->selectedItems());
+	qDeleteAll(ui->fileTreeWidget->selectedItems());
 }
 
 void SetupWindow::on_targetSpeedRelativeSlider_sliderMoved(int position)
@@ -180,12 +210,14 @@ void SetupWindow::updateSliderTooltip(QSlider *slider, bool updatePositon, int p
 void SetupWindow::on_startConversionButton_clicked()
 {
 	QStringList files;
-	for(int i = 0, max = ui->fileListWidget->count(); i < max; ++i)
-		files += ui->fileListWidget->item(i)->text();
+	for(int i = 0, max = ui->fileTreeWidget->topLevelItemCount(); i < max; ++i)
+		files += ui->fileTreeWidget->topLevelItem(i)->text(2);
 	if(!files.isEmpty()) {
 		QVariantHash setup;
 		setup.insert(QStringLiteral("size"), ui->targetSizeSpinBox->value());
 		setup.insert(QStringLiteral("frameRate"), ui->frameRateDoubleSpinBox->value());
+		setup.insert(QStringLiteral("deleteSrc"), ui->deleteOriginalFilesCheckBox->isChecked());
+		setup.insert(QStringLiteral("skipExisting"), ui->sKipExisitingFilesCheckBox->isChecked());
 		setup.insert(QStringLiteral("speed"), pow(2, ui->targetSpeedRelativeSlider->value()));
 		if(ui->outputDirectoryCheckBox->isChecked())
 			setup.insert(QStringLiteral("outDir"), ui->outputDirectoryPathEdit->path());

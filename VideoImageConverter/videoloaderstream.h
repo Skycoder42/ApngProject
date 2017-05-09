@@ -16,7 +16,7 @@ public:
 
 protected:
 	QString componentName() const override;
-	bool setup(const QVariantHash &) override;
+	bool setup(const QVariantHash &setupHash) override;
 	bool tearDown() override;
 	QString lastError() const override;
 

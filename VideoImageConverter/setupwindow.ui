@@ -25,7 +25,7 @@
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QListWidget" name="fileListWidget">
+        <widget class="QTreeWidget" name="fileTreeWidget">
          <property name="contextMenuPolicy">
           <enum>Qt::ActionsContextMenu</enum>
          </property>
@@ -41,6 +41,36 @@
          <property name="textElideMode">
           <enum>Qt::ElideMiddle</enum>
          </property>
+         <property name="rootIsDecorated">
+          <bool>false</bool>
+         </property>
+         <property name="itemsExpandable">
+          <bool>false</bool>
+         </property>
+         <property name="sortingEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="animated">
+          <bool>true</bool>
+         </property>
+         <property name="expandsOnDoubleClick">
+          <bool>false</bool>
+         </property>
+         <column>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Size</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Full Path</string>
+          </property>
+         </column>
         </widget>
        </item>
        <item>
@@ -102,14 +132,8 @@
             <property name="focusPolicy">
              <enum>Qt::StrongFocus</enum>
             </property>
-            <property name="style">
-             <enum>QPathEdit::JoinedButton</enum>
-            </property>
             <property name="pathMode">
              <enum>QPathEdit::ExistingFolder</enum>
-            </property>
-            <property name="dialogOptions">
-             <set>QFileDialog::ShowDirsOnly</set>
             </property>
             <property name="editable">
              <bool>true</bool>
@@ -221,6 +245,39 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="deleteOriginalFilesLabel">
+            <property name="text">
+             <string>&amp;Delete original files:</string>
+            </property>
+            <property name="buddy">
+             <cstring>deleteOriginalFilesCheckBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QCheckBox" name="deleteOriginalFilesCheckBox"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="sKipExisitingFilesLabel">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>S&amp;kip exisiting files:</string>
+            </property>
+            <property name="buddy">
+             <cstring>sKipExisitingFilesCheckBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="sKipExisitingFilesCheckBox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -312,13 +369,16 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>fileListWidget</tabstop>
+  <tabstop>fileTreeWidget</tabstop>
   <tabstop>addButton</tabstop>
+  <tabstop>removeButton</tabstop>
   <tabstop>outputDirectoryCheckBox</tabstop>
   <tabstop>outputDirectoryPathEdit</tabstop>
   <tabstop>targetSizeSpinBox</tabstop>
   <tabstop>frameRateDoubleSpinBox</tabstop>
   <tabstop>targetSpeedRelativeSlider</tabstop>
+  <tabstop>deleteOriginalFilesCheckBox</tabstop>
+  <tabstop>sKipExisitingFilesCheckBox</tabstop>
   <tabstop>startConversionButton</tabstop>
  </tabstops>
  <resources>

@@ -20,6 +20,7 @@ protected slots:
 
 private:
 	QString _outDir;
+	bool _deleteSrc;
 	QString _lastError;
 };
 

@@ -35,13 +35,13 @@ HEADERS += \
 	converterstatus.h \
 	conversionwindow.h \
 	rammanager.h \
-    piedrawer.h \
-    convertfileinfo.h \
-    converterstream.h \
-    videograbbersurface.h \
-    videoloaderstream.h \
-    imagetransformatorstream.h \
-    apngassemblerstream.h
+	piedrawer.h \
+	convertfileinfo.h \
+	converterstream.h \
+	videograbbersurface.h \
+	videoloaderstream.h \
+	imagetransformatorstream.h \
+	apngassemblerstream.h
 
 SOURCES += main.cpp \
 	setupwindow.cpp \
@@ -50,13 +50,13 @@ SOURCES += main.cpp \
 	converterstatus.cpp \
 	conversionwindow.cpp \
 	rammanager.cpp \
-    piedrawer.cpp \
-    convertfileinfo.cpp \
-    converterstream.cpp \
-    videograbbersurface.cpp \
-    videoloaderstream.cpp \
-    imagetransformatorstream.cpp \
-    apngassemblerstream.cpp
+	piedrawer.cpp \
+	convertfileinfo.cpp \
+	converterstream.cpp \
+	videograbbersurface.cpp \
+	videoloaderstream.cpp \
+	imagetransformatorstream.cpp \
+	apngassemblerstream.cpp
 
 FORMS += \
 	setupwindow.ui \
@@ -64,3 +64,6 @@ FORMS += \
 
 RESOURCES += \
 	videoimageconverter_res.qrc
+
+target.path = $$[QT_INSTALL_BINS]
+INSTALLS += target

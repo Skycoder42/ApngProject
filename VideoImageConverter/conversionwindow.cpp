@@ -178,6 +178,7 @@ void ConversionWindow::postMessage(ConverterStatus *info, QString text, const Qt
 									text,
 									ui->logListWidget);
 	item->setToolTip(text);
+	ui->logListWidget->scrollToBottom();
 
 	if(msgType == QtCriticalMsg)
 		DialogMaster::critical(this, text, tr("Critical Error occured!"));

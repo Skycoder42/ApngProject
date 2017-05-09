@@ -4,7 +4,9 @@
 
 ApngAssemblerStream::ApngAssemblerStream(QObject *parent) :
 	ConverterStream(parent),
-	_outDir()
+	_outDir(),
+	_deleteSrc(false),
+	_lastError()
 {}
 
 QString ApngAssemblerStream::componentName() const
@@ -14,6 +16,7 @@ QString ApngAssemblerStream::componentName() const
 
 bool ApngAssemblerStream::setup(const QVariantHash &setupHash)
 {
+	_deleteSrc = setupHash.value(QStringLiteral("deleteSrc"), _deleteSrc).toBool();
 	if(setupHash.contains(QStringLiteral("outDir"))) {
 		_outDir = setupHash.value(QStringLiteral("outDir")).toString();
 		if(!QDir(_outDir).exists()) {
@@ -82,6 +85,9 @@ void ApngAssemblerStream::handleNext()
 
 			info->resetData();
 			if(apngAsm.assemble(resPath.absoluteFilePath().toStdString())) {
+				if(_deleteSrc && !QFile::remove(info->filename()))
+					emit showMessage(info, tr("Failed to delete original file!"), QtWarningMsg);
+
 				info->updateStatus(ConvertFileInfo::Success);
 				emit showMessage(info, tr("APNG file created"), QtInfoMsg);
 			} else
