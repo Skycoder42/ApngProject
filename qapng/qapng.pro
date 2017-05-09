@@ -5,6 +5,7 @@ QT       += core
 LIBS += -lpng
 
 TARGET = $$qtLibraryTarget(qapng)
+VERSION = 2.0.0
 
 HEADERS += apngimageplugin.h \
 	apngimagehandler.h \
