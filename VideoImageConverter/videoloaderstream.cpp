@@ -32,7 +32,7 @@ bool VideoLoaderStream::setup(const QVariantHash &setupHash)
 
 	_readPlayer->setVideoOutput(_grabber);
 	_readPlayer->setMuted(true);
-	_readPlayer->setPlaybackRate(4.0);//TODO move to setup
+	_readPlayer->setPlaybackRate(4.0);
 
 	return _readPlayer->availability() == QMultimedia::Available;
 }
