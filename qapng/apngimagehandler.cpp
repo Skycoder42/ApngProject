@@ -1,13 +1,6 @@
 #include "apngimagehandler.h"
 #include <QFileDevice>
 #include <loadapng.h>
-#ifdef Q_OS_WIN
-#include <io.h>
-#define dup _dup
-#else
-#include <QDebug>
-#include <unistd.h>
-#endif
 
 void apngCleanupHandler(void *info);
 
@@ -32,9 +25,7 @@ bool ApngImageHandler::read(QImage *image)
 	if(_data.isEmpty())
 		return false;
 	*image = _data[_index].first;
-	if(++_index >= _data.size())
-		_index = 0;
-	return !image->isNull();
+	return jumpToNextImage() && !image->isNull();
 }
 
 QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
