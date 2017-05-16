@@ -4,7 +4,8 @@
   "dependencies": [
     "de.skycoder42.dialog-master@1.2.5",
     "de.skycoder42.qpathedit@2.0.0",
-    "de.skycoder42.qobjectlistmodel@1.1.1"
+    "de.skycoder42.qobjectlistmodel@1.1.1",
+    "de.skycoder42.qtaskbarcontrol@0.1.0"
   ],
   "license": "NONE",
   "pri_filename": "",

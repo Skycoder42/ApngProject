@@ -7,10 +7,8 @@
 #include <QLabel>
 #include <qobjectlistmodel.h>
 #include <qobjectproxymodel.h>
-#ifdef Q_OS_WIN
-#include <QWinTaskbarButton>
-#include <QWinTaskbarProgress>
-#endif
+#include <qtaskbarcontrol.h>
+#include <QSet>
 #include "converterstatus.h"
 #include "converterengine.h"
 
@@ -27,12 +25,9 @@ public:
 	~ConversionWindow();
 
 public slots:
-	void open(const QStringList &streamNames);
+	void open(const QStringList &streamNames, QSet<QString> folders);
 
 protected:
-#ifdef Q_OS_WIN
-	void showEvent(QShowEvent *event) override;
-#endif
 	void closeEvent(QCloseEvent *event) final;
 
 private slots:
@@ -45,15 +40,17 @@ private:
 	ConverterEngine *engine;
 
 	Ui::ConversionWindow *ui;
+	QTaskbarControl *taskbar;
+	int progressMax;
+	int progressCurrent;
+
 	bool canClose;
 	bool isAborting;
-#ifdef Q_OS_WIN
-	QWinTaskbarButton *taskBarButton;
-#endif
 
 	QGenericListModel<ConverterStatus> *converterModel;
 	QObjectProxyModel *proxyModel;
 	QHash<int, QProgressBar*> streamBars;
+	QSet<QString> folders;
 
 	QProgressBar *ramBar;
 	QLabel *ramLabel;

@@ -4,20 +4,22 @@
 #include <QCloseEvent>
 #include <QSettings>
 #include <dialogmaster.h>
+#include <QDesktopServices>
 #include "rammanager.h"
 
 ConversionWindow::ConversionWindow(ConverterEngine *engine, QWidget *parent) :
 	QMainWindow(parent),
 	engine(engine),
 	ui(new Ui::ConversionWindow),
+	taskbar(new QTaskbarControl(this)),
+	progressMax(0),
+	progressCurrent(0),
 	canClose(false),
 	isAborting(false),
-#ifdef Q_OS_WIN
-	taskBarButton(new QWinTaskbarButton(this)),
-#endif
 	converterModel(engine->model()),
 	proxyModel(new QObjectProxyModel({tr("Status"), tr("Filename"), tr("Status-Text"), tr("Progress")}, this)),
 	streamBars(),
+	folders(),
 	ramBar(new QProgressBar(this)),
 	ramLabel(new QLabel(this)),
 	ramUsageTimer(new QTimer(this))
@@ -27,6 +29,8 @@ ConversionWindow::ConversionWindow(ConverterEngine *engine, QWidget *parent) :
 								tr("File Status"));
 	ui->tabWidget->addTab(ui->logListWidget,
 								tr("Error-Log"));
+
+	taskbar->setAttribute(QTaskbarControl::LinuxDesktopFile, "videoimageconverter.desktop");
 
 	//model
 	proxyModel->setSourceModel(converterModel);
@@ -80,36 +84,24 @@ ConversionWindow::~ConversionWindow()
 	delete ui;
 }
 
-void ConversionWindow::open(const QStringList &streamNames)
+void ConversionWindow::open(const QStringList &streamNames, QSet<QString> folders)
 {
+	this->folders = folders;
 	auto index = 0;
 	foreach(auto name, streamNames) {
 		auto bar = new QProgressBar(ui->progressBox);
-		bar->setMaximum(converterModel->rowCount());
+		auto max = converterModel->rowCount();
+		bar->setMaximum(max);
 		bar->setValue(0);
 		ui->progressLayout->addRow(tr("%1 Progress:").arg(name), bar);
 		streamBars.insert(index++, bar);
 	}
-
 	show();
 	raise();
 	activateWindow();
+	progressMax = converterModel->rowCount() * streamNames.size();
+	taskbar->setProgressVisible(true);
 }
-
-#ifdef Q_OS_WIN
-void ConversionWindow::showEvent(QShowEvent *event)
-{
-	QMainWindow::showEvent(event);
-	if(!taskBarButton->window()) {
-		taskBarButton->setWindow(windowHandle());
-		auto bar = taskBarButton->progress();
-		bar->setRange(0, fileModel->allItems().size());
-		bar->show();
-		connect(assembler, &VideoLoader::progressUpdate,
-				bar, &QWinTaskbarProgress::setValue);
-	}
-}
-#endif
 
 void ConversionWindow::closeEvent(QCloseEvent *event)
 {
@@ -187,12 +179,14 @@ void ConversionWindow::postMessage(ConverterStatus *info, QString text, const Qt
 void ConversionWindow::updateProgress(int index, int progress)
 {
 	auto bar = streamBars.value(index, nullptr);
-	if(bar)//TODO update total
+	if(bar)
 		bar->setValue(progress);
+	taskbar->setProgress(++progressCurrent/(double)progressMax);
 }
 
 void ConversionWindow::lastFinished()
 {
+	QApplication::alert(this);
 	canClose = true;
 	if(isAborting) {
 		if(DialogMaster::information(this,
@@ -230,6 +224,9 @@ void ConversionWindow::lastFinished()
 		}
 
 		DialogMaster::messageBox(config);
-		//TODO openAll
+		if(openAll) {
+			foreach(auto folder, folders)
+				QDesktopServices::openUrl(QUrl::fromLocalFile(folder));
+		}
 	}
 }

@@ -40,15 +40,20 @@ void ConverterEngine::startConversion(const QStringList &files, const QVariantHa
 		return;
 
 	QList<ConverterStatus*> infos;
+	QSet<QString> folders;
 	foreach(auto file, files) {
 		auto info = new ConvertFileInfo(file);
 		infos.append(info);
 		_stream->enqueue(info);
+		if(!setup.contains(QStringLiteral("outDir")))
+			folders.insert(QDir::cleanPath(QFileInfo(file).dir().absolutePath()));
 	}
 	_stream->completeChain();
 	_model->resetModel(infos);
 
-	emit showProgress(_stream->streamNames());
+	if(setup.contains(QStringLiteral("outDir")))
+		folders.insert(setup.value(QStringLiteral("outDir")).toString());
+	emit showProgress(_stream->streamNames(), folders);
 }
 
 void ConverterEngine::abortConversion()

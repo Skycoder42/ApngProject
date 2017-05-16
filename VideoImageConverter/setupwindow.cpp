@@ -217,7 +217,6 @@ void SetupWindow::on_startConversionButton_clicked()
 		setup.insert(QStringLiteral("size"), ui->targetSizeSpinBox->value());
 		setup.insert(QStringLiteral("frameRate"), ui->frameRateDoubleSpinBox->value());
 		setup.insert(QStringLiteral("deleteSrc"), ui->deleteOriginalFilesCheckBox->isChecked());
-		setup.insert(QStringLiteral("skipExisting"), ui->sKipExisitingFilesCheckBox->isChecked());
 		setup.insert(QStringLiteral("speed"), pow(2, ui->targetSpeedRelativeSlider->value()));
 		if(ui->outputDirectoryCheckBox->isChecked())
 			setup.insert(QStringLiteral("outDir"), ui->outputDirectoryPathEdit->path());

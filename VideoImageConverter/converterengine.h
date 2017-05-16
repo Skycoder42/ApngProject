@@ -2,6 +2,7 @@
 #define CONVERTERENGINE_H
 
 #include <QObject>
+#include <QSet>
 #include <qobjectlistmodel.h>
 #include "converterstatus.h"
 #include "convertfileinfo.h"
@@ -22,7 +23,7 @@ public slots:
 	void abortConversion();
 
 signals:
-	void showProgress(QStringList streams);
+	void showProgress(QStringList streams, QSet<QString> folders);
 	void postMessage(ConverterStatus *info, QString text, const QtMsgType &msgType, bool updateInfo);
 	void updateProgress(int index, int progress);
 	void completed();

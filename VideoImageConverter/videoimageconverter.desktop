@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Version=1.1
+Name=VideoImageConverter
+Comment=Video to APNG-Converter
+Exec=/home/sky/Programming/QtProjects/build-ApngProject-Desktop_Qt_5_8_0_GCC_64bit-Debug/VideoImageConverter/VideoImageConverter
+Icon=/home/sky/Programming/QtProjects/ApngProject/VideoImageConverter/resources/main.ico
+Terminal=false
