@@ -28,8 +28,8 @@ package() {
 
   make INSTALL_ROOT="$pkgdir" install
 
-  install -D -m644 videoimageconverter.desktop "$pkgdir/usr/share/applications/videoimageconverter.desktop"
-  install -D -m644 apng-vic_32.png "$pkgdir/usr/share/icons/hicolor/32x32/apps/apng-vic.png"
-  install -D -m644 apng-vic_16.png "$pkgdir/usr/share/icons/hicolor/16x16/apps/apng-vic.png"
+  install -D -m644 VideoImageConverter/videoimageconverter.desktop "$pkgdir/usr/share/applications/videoimageconverter.desktop"
+  install -D -m644 VideoImageConverter/apng-vic_32.png "$pkgdir/usr/share/icons/hicolor/32x32/apps/apng-vic.png"
+  install -D -m644 VideoImageConverter/apng-vic_16.png "$pkgdir/usr/share/icons/hicolor/16x16/apps/apng-vic.png"
   install -D -m644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
