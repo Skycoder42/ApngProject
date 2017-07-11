@@ -13,6 +13,10 @@ Widget::Widget(QWidget *parent) :
 	qDebug() << QImageReader::supportedImageFormats();
 	qDebug() << QMovie::supportedFormats();
 
+	qDebug() << QImageReader(":/testData/pngSample.png", "apng").supportsAnimation();
+	qDebug() << QImageReader(":/testData/apngSample.apng", "apng").supportsAnimation();
+	qDebug() << QImageReader(":/testData/ppngSample.png", "apng").supportsAnimation();
+
 	//load images
 	this->ui->labelImagePng->setPixmap(QPixmap::fromImage(QImage(":/testData/pngSample.png")));
 	this->ui->labelImageApng->setPixmap(QPixmap::fromImage(QImage(":/testData/apngSample.apng")));

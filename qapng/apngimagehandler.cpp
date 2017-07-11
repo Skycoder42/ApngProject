@@ -38,9 +38,8 @@ QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
 		else
 			return _data[_index].first.size();
 	}
-	case QImageIOHandler::IncrementalReading:
 	case QImageIOHandler::Animation:
-		return true;
+		return _data.size() != 1;
 	default:
 		return QVariant();
 	}
@@ -50,7 +49,6 @@ bool ApngImageHandler::supportsOption(QImageIOHandler::ImageOption option) const
 {
 	switch(option) {
 	case QImageIOHandler::Size:
-	case QImageIOHandler::IncrementalReading:
 	case QImageIOHandler::Animation:
 		return true;
 	default:
