@@ -26,8 +26,6 @@ public:
 	int nextImageDelay() const final;
 	int currentImageNumber() const final;
 
-	bool loadImage();
-
 private:
 	quint32 _index;
 	QScopedPointer<ApngReader> _reader;

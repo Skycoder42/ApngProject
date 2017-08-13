@@ -18,12 +18,15 @@ QByteArray ApngImageHandler::name() const
 
 bool ApngImageHandler::canRead() const
 {
-	return _reader->isValid();
+	auto valid = _reader->init(device());
+	if(valid)
+		setFormat("apng");
+	return valid;
 }
 
 bool ApngImageHandler::read(QImage *image)
 {
-	if(!_reader->isValid())
+	if(!_reader->init(device()))
 		return false;
 	*image = _reader->readFrame(_index);
 	return jumpToNextImage() && !image->isNull();
@@ -55,7 +58,7 @@ bool ApngImageHandler::supportsOption(QImageIOHandler::ImageOption option) const
 
 bool ApngImageHandler::jumpToNextImage()
 {
-	if(!_reader->isValid())
+	if(!_reader->init(device()))
 		return false;
 	else if(_index < _reader->frames() - 1) {
 		++_index;
@@ -66,7 +69,7 @@ bool ApngImageHandler::jumpToNextImage()
 
 bool ApngImageHandler::jumpToImage(int imageNumber)
 {
-	if(!_reader->isValid())
+	if(!_reader->init(device()))
 		return false;
 	else if((quint32)imageNumber < _reader->frames()) {
 		_index = imageNumber;
@@ -77,7 +80,7 @@ bool ApngImageHandler::jumpToImage(int imageNumber)
 
 int ApngImageHandler::loopCount() const
 {
-	if(_reader->isValid() && _reader->isAnimated()) {
+	if(_reader->init(device()) && _reader->isAnimated()) {
 		auto plays = _reader->plays();
 		if(plays == 0)
 			return -1;
@@ -89,7 +92,7 @@ int ApngImageHandler::loopCount() const
 
 int ApngImageHandler::imageCount() const
 {
-	if(_reader->isValid())
+	if(_reader->init(device()))
 		return _reader->frames();
 	else
 		return 0;
@@ -97,7 +100,7 @@ int ApngImageHandler::imageCount() const
 
 int ApngImageHandler::nextImageDelay() const
 {
-	if(!_reader->isValid())
+	if(!_reader->init(device()))
 		return false;
 	else
 		return _reader->readFrame(_index).delayMsec();
@@ -106,14 +109,4 @@ int ApngImageHandler::nextImageDelay() const
 int ApngImageHandler::currentImageNumber() const
 {
 	return _index;
-}
-
-bool ApngImageHandler::loadImage()
-{
-	if(!_reader->setDevice(device()))
-		return false;
-	else {
-		_reader->init();
-		return true;
-	}
 }

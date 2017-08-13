@@ -30,23 +30,29 @@ ApngReader::~ApngReader()
 	}
 }
 
-bool ApngReader::setDevice(QIODevice *device)
+bool ApngReader::checkPngSig(QIODevice *device)
 {
-	//verify png
 	if(device) {
 		auto sig = device->peek(8);
-		if(png_sig_cmp((png_const_bytep)sig.constData(), 0, sig.size()) == 0) {
-			_device = device;
+		if(png_sig_cmp((png_const_bytep)sig.constData(), 0, sig.size()) == 0)
 			return true;
-		}
 	}
-
 	return false;
 }
 
-void ApngReader::init()
+bool ApngReader::init(QIODevice *device)
 {
+	if(_device)
+		return _infoRead;
+
+	//verify png
+	if(checkPngSig(device))
+		_device = device;
+	else
+		return false;
+
 	try {
+		//init png structs
 		_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 		if(!_png)
 			throw QStringLiteral("failed to create png struct");
@@ -55,20 +61,22 @@ void ApngReader::init()
 			throw QStringLiteral("failed to create info struct");
 
 		if (setjmp(png_jmpbuf(_png)))
-			throw QStringLiteral("setjmp failed");
+			throw QStringLiteral("failed to read image header");
 
 		_readers.insert(_png, this);
 		png_set_progressive_read_fn(_png, NULL, &ApngReader::info_fn, &ApngReader::row_fn, &ApngReader::end_fn);
 
+		//read image header
 		auto valid = false;
 		do {
 			valid = readChunk();
 		} while(valid && !_infoRead);
+
+		return _infoRead;
 	} catch(QString e) {
 		qCritical() << e;
-		_readers.remove(_png);
-		png_destroy_read_struct(&_png, &_info, NULL);
-		_device = nullptr;
+		_infoRead = false;
+		return false;
 	}
 }
 
@@ -77,10 +85,8 @@ ApngReader::ApngFrame ApngReader::readFrame(quint32 index)
 	if(index < (quint32)_allFrames.size())
 		return _allFrames[index];
 
-	if (setjmp(png_jmpbuf(_png))) {
-		qCritical() <<  QStringLiteral("setjmp failed");
+	if (setjmp(png_jmpbuf(_png)))
 		return ApngFrame();
-	}
 
 	auto valid = false;
 	do {
@@ -91,11 +97,6 @@ ApngReader::ApngFrame ApngReader::readFrame(quint32 index)
 		return _allFrames[index];
 	else
 		return ApngFrame();
-}
-
-bool ApngReader::isValid() const
-{
-	return _device;
 }
 
 bool ApngReader::isAnimated() const
@@ -231,7 +232,7 @@ void ApngReader::frame_end_fn(png_structp png_ptr, png_uint_32 frame_num)
 	else
 		reader->copyOver();
 
-	reader->_allFrames.append(image);
+	reader->_allFrames.append({image, (double)frame.delay_num / (double)frame.delay_den});
 
 	if (frame.dop == PNG_DISPOSE_OP_PREVIOUS)
 		image = temp;

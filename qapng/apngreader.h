@@ -32,11 +32,11 @@ public:
 	explicit ApngReader(QObject *parent = nullptr);
 	~ApngReader();
 
-	bool setDevice(QIODevice *device);
-	void init();
+	static bool checkPngSig(QIODevice *device);
+
+	bool init(QIODevice *device);
 	ApngFrame readFrame(quint32 index);
 
-	bool isValid() const;
 	bool isAnimated() const;
 	QSize size() const;
 	quint32 frames() const;
@@ -75,7 +75,7 @@ private:
 		png_bytepp rows;
 	} _frame;
 
-	ApngFrame _lastImg;
+	QImage _lastImg;
 
 	QList<ApngFrame> _allFrames;
 
