@@ -86,7 +86,7 @@ private:
 	static void frame_info_fn(png_structp png_ptr, png_uint_32 frame_num);
 	static void frame_end_fn(png_structp png_ptr, png_uint_32 frame_num);
 
-	bool readChunk();
+	bool readChunk(quint32 len = 0);
 	void copyOver();
 	void blendOver();
 };

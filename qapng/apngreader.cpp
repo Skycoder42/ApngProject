@@ -3,6 +3,7 @@
 #include <QImage>
 #include <QRect>
 #include <QThread>
+#include <QtEndian>
 
 QHash<png_structp, ApngReader*> ApngReader::_readers;
 
@@ -66,8 +67,8 @@ bool ApngReader::init(QIODevice *device)
 		_readers.insert(_png, this);
 		png_set_progressive_read_fn(_png, NULL, &ApngReader::info_fn, &ApngReader::row_fn, &ApngReader::end_fn);
 
-		//read image header
-		auto valid = false;
+		//read image sig + header
+		auto valid = readChunk(8);
 		do {
 			valid = readChunk();
 		} while(valid && !_infoRead);
@@ -247,9 +248,17 @@ void ApngReader::frame_end_fn(png_structp png_ptr, png_uint_32 frame_num)
 	}
 }
 
-bool ApngReader::readChunk()
+bool ApngReader::readChunk(quint32 len)
 {
-	auto data = _device->read(1024);
+	QByteArray data;
+	if(len == 0) {// read exactly 1 chunk
+		//read 4 bytes -> size
+		data = _device->read(4);
+		len = *((quint32*)data.constData());
+		len = qFromBigEndian(len) + 8;//type (4b) + crc (4b)
+		data += _device->read(len);
+	} else
+		data = _device->read(len);
 	if(!data.isEmpty())
 		png_process_data(_png, _info, (png_bytep)data.data(), data.size());
 	return !_device->atEnd();
