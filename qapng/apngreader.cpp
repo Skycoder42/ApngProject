@@ -133,23 +133,13 @@ void ApngReader::info_fn(png_structp png_ptr, png_infop info_ptr)
 	(void)png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
-	//read apng information
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_acTL)) {
-		reader->_animated = true;
-		png_get_acTL(png_ptr, info_ptr, &reader->_frameCount, &reader->_plays);
-		reader->_skipFirst = png_get_first_frame_is_hidden(png_ptr, info_ptr);
-
-		//add extended APNG read functions
-		png_set_progressive_frame_fn(png_ptr, &ApngReader::frame_info_fn, &ApngReader::frame_end_fn);
-	}
-
 	//init read frame struct
 	frame.x = 0;
 	frame.y = 0;
 	frame.width = png_get_image_width(png_ptr, info_ptr);
 	frame.height = png_get_image_height(png_ptr, info_ptr);
 	frame.channels = png_get_channels(png_ptr, info_ptr);
-	frame.delay_num = 1;
+	frame.delay_num = 0;
 	frame.delay_den = 10;
 	frame.dop = PNG_DISPOSE_OP_NONE;
 	frame.bop = PNG_BLEND_OP_SOURCE;
@@ -162,6 +152,19 @@ void ApngReader::info_fn(png_structp png_ptr, png_infop info_ptr)
 	// init image
 	reader->_lastImg = QImage(frame.width, frame.height, QImage::Format_ARGB32);
 	reader->_lastImg.fill(Qt::black);
+
+	//read apng information
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_acTL)) {
+		reader->_animated = true;
+		png_get_acTL(png_ptr, info_ptr, &reader->_frameCount, &reader->_plays);
+		reader->_skipFirst = png_get_first_frame_is_hidden(png_ptr, info_ptr);
+
+		//add extended APNG read functions
+		png_set_progressive_frame_fn(png_ptr, &ApngReader::frame_info_fn, &ApngReader::frame_end_fn);
+		//read info for first frame (skipped otherwise)
+		if(!reader->_skipFirst)
+			frame_info_fn(png_ptr, 0);
+	}
 
 	reader->_infoRead = true;
 }

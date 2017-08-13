@@ -1,8 +1,6 @@
 #include "apngimagehandler.h"
 #include "apngreader.h"
 
-void apngCleanupHandler(void *info);
-
 ApngImageHandler::ApngImageHandler() :
 	QImageIOHandler(),
 	_index(0),
@@ -21,7 +19,7 @@ bool ApngImageHandler::canRead() const
 	auto valid = _reader->init(device());
 	if(valid)
 		setFormat("apng");
-	return valid;
+	return valid && _index < _reader->frames();
 }
 
 bool ApngImageHandler::read(QImage *image)
@@ -29,8 +27,8 @@ bool ApngImageHandler::read(QImage *image)
 	if(!_reader->init(device()))
 		return false;
 	*image = _reader->readFrame(_index);
-	return jumpToNextImage() && !image->isNull();
-	return false;
+	_index++;
+	return !image->isNull();
 }
 
 QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
@@ -102,11 +100,13 @@ int ApngImageHandler::nextImageDelay() const
 {
 	if(!_reader->init(device()))
 		return false;
+	else if(_index >= _reader->frames())
+		return _reader->readFrame(0).delayMsec();
 	else
 		return _reader->readFrame(_index).delayMsec();
 }
 
 int ApngImageHandler::currentImageNumber() const
 {
-	return _index;
+	return _index < _reader->frames() ? _index : 0;
 }
