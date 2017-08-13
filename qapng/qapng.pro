@@ -9,11 +9,11 @@ VERSION = 2.0.0
 
 HEADERS += apngimageplugin.h \
 	apngimagehandler.h \
-	loadapng.h
+    apngreader.h
 
 SOURCES += apngimageplugin.cpp \
 	apngimagehandler.cpp \
-	loadapng.cpp
+    apngreader.cpp
 
 DISTFILES += qapng.json
 

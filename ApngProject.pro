@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
-SUBDIRS += VideoImageConverter \
+SUBDIRS += \#VideoImageConverter \
 	qapng \
 	PluginTest

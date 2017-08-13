@@ -4,13 +4,14 @@
 #include <QImageIOHandler>
 #include <QVariant>
 #include <QImage>
-#include <QPair>
 #include <QVector>
+class ApngReader;
 
 class ApngImageHandler : public QImageIOHandler
 {
 public:
 	ApngImageHandler();
+	~ApngImageHandler();
 
 	// QImageIOHandler interface
 	QByteArray name() const final;
@@ -25,12 +26,11 @@ public:
 	int nextImageDelay() const final;
 	int currentImageNumber() const final;
 
-	void loadImage();
+	bool loadImage();
 
 private:
-	typedef QPair<QImage, int> ImageInfo;
-	int _index;
-	QVector<ImageInfo> _data;
+	quint32 _index;
+	QScopedPointer<ApngReader> _reader;
 };
 
 #endif // APNGIMAGEHANDLER_H

@@ -1,14 +1,15 @@
 #include "apngimagehandler.h"
-#include <QFileDevice>
-#include <loadapng.h>
+#include "apngreader.h"
 
 void apngCleanupHandler(void *info);
 
 ApngImageHandler::ApngImageHandler() :
 	QImageIOHandler(),
 	_index(0),
-	_data()
+	_reader(new ApngReader())
 {}
+
+ApngImageHandler::~ApngImageHandler(){}
 
 QByteArray ApngImageHandler::name() const
 {
@@ -17,29 +18,25 @@ QByteArray ApngImageHandler::name() const
 
 bool ApngImageHandler::canRead() const
 {
-	return !_data.isEmpty();
+	return _reader->isValid();
 }
 
 bool ApngImageHandler::read(QImage *image)
 {
-	if(_data.isEmpty())
+	if(!_reader->isValid())
 		return false;
-	*image = _data[_index].first;
+	*image = _reader->readFrame(_index);
 	return jumpToNextImage() && !image->isNull();
+	return false;
 }
 
 QVariant ApngImageHandler::option(QImageIOHandler::ImageOption option) const
 {
 	switch(option) {
 	case QImageIOHandler::Size:
-	{
-		if(_data.isEmpty())
-			return QSize();
-		else
-			return _data[_index].first.size();
-	}
+		return _reader->size();
 	case QImageIOHandler::Animation:
-		return _data.size() != 1;
+		return _reader->isAnimated();
 	default:
 		return QVariant();
 	}
@@ -58,7 +55,9 @@ bool ApngImageHandler::supportsOption(QImageIOHandler::ImageOption option) const
 
 bool ApngImageHandler::jumpToNextImage()
 {
-	if(_index < _data.size() - 1) {
+	if(!_reader->isValid())
+		return false;
+	else if(_index < _reader->frames() - 1) {
 		++_index;
 		return true;
 	} else
@@ -67,7 +66,9 @@ bool ApngImageHandler::jumpToNextImage()
 
 bool ApngImageHandler::jumpToImage(int imageNumber)
 {
-	if(imageNumber < _data.size() - 1) {
+	if(!_reader->isValid())
+		return false;
+	else if((quint32)imageNumber < _reader->frames()) {
 		_index = imageNumber;
 		return true;
 	} else
@@ -76,20 +77,30 @@ bool ApngImageHandler::jumpToImage(int imageNumber)
 
 int ApngImageHandler::loopCount() const
 {
-	return -1;
+	if(_reader->isValid() && _reader->isAnimated()) {
+		auto plays = _reader->plays();
+		if(plays == 0)
+			return -1;
+		else
+			return plays;
+	} else
+		return 0;
 }
 
 int ApngImageHandler::imageCount() const
 {
-	return _data.size();
+	if(_reader->isValid())
+		return _reader->frames();
+	else
+		return 0;
 }
 
 int ApngImageHandler::nextImageDelay() const
 {
-	if(_data.isEmpty())
-		return 0;
+	if(!_reader->isValid())
+		return false;
 	else
-		return _data[_index].second;
+		return _reader->readFrame(_index).delayMsec();
 }
 
 int ApngImageHandler::currentImageNumber() const
@@ -97,27 +108,12 @@ int ApngImageHandler::currentImageNumber() const
 	return _index;
 }
 
-void ApngImageHandler::loadImage()
+bool ApngImageHandler::loadImage()
 {
-	if(device() != nullptr) {
-		std::vector<APNGFrame> frames;
-		auto res = load_apng(device(), frames);
-
-		if(res >= 0) {
-			_data = QVector<ImageInfo>((int)frames.size());
-			for(auto i = 0, max = _data.size(); i < max; ++i) {
-				APNGFrame &frame = frames[i];
-				QImage image(frame.p, frame.w, frame.h, QImage::Format_RGBA8888, apngCleanupHandler, new APNGFrame(frame));
-				_data[i] = {image, qRound(((double)frame.delay_num / (double)frame.delay_den) * 1000.0)};
-			}
-		}
+	if(!_reader->setDevice(device()))
+		return false;
+	else {
+		_reader->init();
+		return true;
 	}
-}
-
-void apngCleanupHandler(void *info)
-{
-	auto frame = static_cast<APNGFrame*>(info);
-	delete[] frame->rows;
-	delete[] frame->p;
-	delete frame;
 }
