@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>testData/apngSample.apng</file>
-        <file>testData/pngSample.png</file>
-        <file>testData/ppngSample.png</file>
-    </qresource>
-</RCC>
