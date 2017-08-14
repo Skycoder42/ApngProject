@@ -19,6 +19,7 @@ QString VideoLoaderStream::componentName() const
 
 bool VideoLoaderStream::setup(const QVariantHash &setupHash)
 {
+	Q_UNUSED(setupHash)
 	_readPlayer = new QMediaPlayer(this, QMediaPlayer::VideoSurface);
 	_grabber = new VideoGrabberSurface(this);
 
