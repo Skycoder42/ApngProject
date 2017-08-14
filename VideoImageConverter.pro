@@ -1,10 +1,10 @@
 TEMPLATE = app
 
-QT += core gui multimedia widgets concurrent
+QT += core gui widgets multimedia concurrent
 CONFIG += c++14
 
 TARGET = VideoImageConverter
-VERSION = 2.0.0
+VERSION = 2.0.1
 
 DEFINES += "TARGET=\\\"$$TARGET\\\""
 DEFINES += "VERSION=\\\"$$VERSION\\\""
